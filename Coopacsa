@@ -1,0 +1,535 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Wallet, 
+  PlusCircle, 
+  Search, 
+  ChevronRight, 
+  DollarSign, 
+  Calendar, 
+  ArrowUpRight, 
+  ArrowDownLeft,
+  X,
+  CheckCircle,
+  AlertCircle,
+  LogOut,
+  Mail,
+  Lock,
+  UserPlus,
+  LogIn,
+  Printer,
+  TrendingUp,
+  FileDown,
+  Calculator,
+  FileSpreadsheet,
+  FileText
+} from 'lucide-react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  signInWithCustomToken
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  doc, 
+  onSnapshot, 
+  serverTimestamp 
+} from 'firebase/firestore';
+
+// --- Firebase Configuration ---
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'coopacsa-pro-v3';
+
+// --- Global Utilities ---
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('es-PA', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount || 0);
+};
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [loans, setLoans] = useState([]);
+  const [showNewLoanModal, setShowNewLoanModal] = useState(false);
+  const [selectedLoan, setSelectedLoan] = useState(null);
+  const [receiptToPrint, setReceiptToPrint] = useState(null);
+
+  // --- Auth logic ---
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        try { await signInWithCustomToken(auth, __initial_auth_token); } catch (e) {}
+      } else {
+        await signInAnonymously(auth);
+      }
+    };
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      console.error("Auth Error", err);
+    }
+  };
+
+  // --- Data Fetching ---
+  useEffect(() => {
+    if (!user) return;
+    const loansRef = collection(db, 'artifacts', appId, 'users', user.uid, 'loans');
+    const unsubscribe = onSnapshot(loansRef, (snapshot) => {
+      const loansData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setLoans(loansData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+    }, (error) => console.error("Firestore Error", error));
+    return () => unsubscribe();
+  }, [user]);
+
+  // --- Export Logic (Alternative XLSX using CSV/XML approach for zero dependencies) ---
+  const exportToExcel = () => {
+    // Generamos un formato XML compatible con Excel para mayor compatibilidad que CSV simple
+    let excelContent = `
+      <xml xmlns:x="urn:schemas-microsoft-com:office:excel">
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>Reporte Coopacsa</x:Name>
+              <x:WorksheetSource HRef="sheet0.xml"/>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+    `;
+
+    // Cabeceras y datos en formato CSV para simplicidad técnica garantizada
+    const headers = ["Socio", "Cedula", "Saldo Actual", "Capital Original", "Tasa %", "Fecha Inicio", "Ultimo Corte", "Estado"];
+    const rows = loans.map(l => [
+      l.clientName,
+      l.clientId,
+      l.currentBalance.toFixed(2),
+      l.originalPrincipal.toFixed(2),
+      l.interestRate,
+      l.startDate,
+      l.lastCutDate,
+      l.status === 'completed' ? 'Saldado' : 'Activo'
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Reporte_Coopacsa_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const printPdfReport = () => {
+    const printWindow = window.open('', '_blank');
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Coopacsa - Reporte de Cartera</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.5; }
+            .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 30px; }
+            .logo { font-size: 28px; font-weight: 900; color: #059669; font-style: italic; }
+            h1 { font-size: 20px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+            .meta { font-size: 12px; color: #64748b; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background-color: #f8fafc; text-align: left; font-size: 11px; text-transform: uppercase; color: #64748b; padding: 12px 10px; border-bottom: 2px solid #e2e8f0; }
+            td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+            .amount { font-family: monospace; font-weight: bold; text-align: right; }
+            .footer { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; }
+            @media print { .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="logo">Coopacsa</div>
+              <h1>Reporte de Cartera Detallado</h1>
+            </div>
+            <div class="meta">
+              Fecha de emisión: ${new Date().toLocaleString()}<br>
+              Total Socios: ${loans.length}
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Socio / Cédula</th>
+                <th>Capital Orig.</th>
+                <th>Tasa</th>
+                <th>Último Corte</th>
+                <th style="text-align: right;">Saldo Pendiente</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${loans.map(l => `
+                <tr>
+                  <td>
+                    <strong>${l.clientName}</strong><br>
+                    <span style="font-size: 10px; color: #64748b">${l.clientId}</span>
+                  </td>
+                  <td>$${l.originalPrincipal.toFixed(2)}</td>
+                  <td>${l.interestRate}%</td>
+                  <td>${l.lastCutDate}</td>
+                  <td class="amount">$${l.currentBalance.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top: 30px; text-align: right; padding: 20px; background: #f8fafc; border-radius: 10px;">
+            <span style="font-size: 12px; font-weight: bold; color: #64748b; margin-right: 20px;">TOTAL CARTERA POR COBRAR:</span>
+            <span style="font-size: 20px; font-weight: 900; color: #059669;">
+              $${loans.reduce((a,c) => a + c.currentBalance, 0).toFixed(2)}
+            </span>
+          </div>
+          <div class="footer">
+            Este reporte es confidencial y para uso exclusivo de la administración de Coopacsa.
+          </div>
+          <script>
+            window.onload = () => { window.print(); };
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  // --- Actions ---
+  const handleCreateLoan = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const principal = parseFloat(formData.get('principal'));
+    const rate = parseFloat(formData.get('rate'));
+    if (!user) return;
+
+    await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'loans'), {
+      clientName: formData.get('clientName'),
+      clientId: formData.get('clientId'),
+      currentBalance: principal,
+      originalPrincipal: principal,
+      interestRate: rate,
+      startDate: formData.get('startDate'),
+      lastCutDate: formData.get('startDate'),
+      status: 'active',
+      history: [{ type: 'initial', amount: principal, date: formData.get('startDate'), description: 'Capital Inicial', balanceAfter: principal }],
+      createdAt: serverTimestamp()
+    });
+    setShowNewLoanModal(false);
+  };
+
+  const handlePayment = async (e) => {
+    e.preventDefault();
+    const amount = parseFloat(e.target.paymentAmount.value);
+    const date = e.target.paymentDate.value;
+    const newBalance = selectedLoan.currentBalance - amount;
+    
+    if (!user) return;
+    const paymentObj = { type: 'payment', amount, date, description: 'Abono de socio', balanceAfter: newBalance, id: Date.now() };
+    const loanRef = doc(db, 'artifacts', appId, 'users', user.uid, 'loans', selectedLoan.id);
+    
+    await updateDoc(loanRef, {
+      currentBalance: Math.max(0, newBalance),
+      history: [...(selectedLoan.history || []), paymentObj],
+      status: newBalance <= 0.05 ? 'completed' : 'active'
+    });
+    
+    setSelectedLoan(null);
+    setReceiptToPrint({ ...paymentObj, clientName: selectedLoan.clientName, remainingBalance: Math.max(0, newBalance) });
+  };
+
+  const executeCut = async () => {
+    const interest = selectedLoan.currentBalance * (selectedLoan.interestRate / 100);
+    const newBalance = selectedLoan.currentBalance + interest;
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (!user) return;
+    const cutObj = { type: 'interest', amount: interest, date: today, description: `Interés (${selectedLoan.interestRate}%)`, balanceAfter: newBalance, id: Date.now() };
+    const loanRef = doc(db, 'artifacts', appId, 'users', user.uid, 'loans', selectedLoan.id);
+
+    await updateDoc(loanRef, {
+      currentBalance: newBalance,
+      history: [...(selectedLoan.history || []), cutObj],
+      lastCutDate: today
+    });
+    setSelectedLoan(null);
+  };
+
+  if (authLoading) return <div className="h-screen flex items-center justify-center bg-slate-50">Iniciando Coopacsa...</div>;
+  if (!user) return (
+    <div className="min-h-screen flex items-center justify-center bg-emerald-600 p-6 font-sans">
+      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-10 text-center">
+        <Wallet className="w-16 h-16 text-emerald-600 mx-auto mb-4" />
+        <h1 className="text-4xl font-black text-slate-800 tracking-tighter mb-2">Coopacsa</h1>
+        <p className="text-slate-400 mb-8 font-bold uppercase text-xs tracking-widest">Portal Administrativo</p>
+        <form onSubmit={handleAuth} className="space-y-4">
+          <input required name="email" type="email" placeholder="Usuario" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input required name="password" type="password" placeholder="Clave" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" />
+          <button className="w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl hover:bg-emerald-700 transition-all">ACCEDER</button>
+        </form>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen bg-[#F8FAFC] font-sans">
+      <aside className="w-64 bg-slate-900 text-white flex flex-col p-6">
+        <h2 className="text-2xl font-black text-emerald-400 mb-10 italic">Coopacsa</h2>
+        <nav className="flex-1 space-y-2">
+          <NavItem active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<LayoutDashboard size={18}/>} label="Dashboard" />
+          <NavItem active={activeTab === 'loans'} onClick={() => setActiveTab('loans')} icon={<Users size={18}/>} label="Socios" />
+        </nav>
+        <button onClick={() => signOut(auth)} className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white mt-auto">
+          <LogOut size={14} /> CERRAR SESIÓN
+        </button>
+      </aside>
+
+      <main className="flex-1 overflow-y-auto p-10">
+        <header className="flex justify-between items-center mb-10">
+          <div>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tighter">
+              {activeTab === 'dashboard' ? 'Resumen de Cartera' : 'Gestión de Socios'}
+            </h1>
+            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mt-1">Sincronizado con la Nube</p>
+          </div>
+          <div className="flex gap-3">
+             <button onClick={printPdfReport} className="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2 font-bold text-xs shadow-sm">
+                <FileText size={16} className="text-red-500" /> REPORTE PDF
+             </button>
+             <button onClick={exportToExcel} className="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2 font-bold text-xs shadow-sm">
+                <FileSpreadsheet size={16} className="text-emerald-500" /> EXPORTAR CSV
+             </button>
+             <button onClick={() => setShowNewLoanModal(true)} className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg hover:bg-emerald-700 transition-all">
+               <PlusCircle size={18} /> NUEVO SOCIO
+             </button>
+          </div>
+        </header>
+
+        {activeTab === 'dashboard' ? (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatCard title="Saldo Total" value={formatCurrency(loans.reduce((a,c)=>a+c.currentBalance,0))} icon={<TrendingUp />} color="emerald" />
+              <StatCard title="Capital Prestado" value={formatCurrency(loans.reduce((a,c)=>a+c.originalPrincipal,0))} icon={<Wallet />} color="blue" />
+              <StatCard title="Socios Totales" value={loans.length} icon={<Users />} color="slate" />
+            </div>
+
+            <div className="bg-white p-8 rounded-[2rem] border shadow-sm">
+              <h3 className="font-black mb-6 uppercase text-xs tracking-widest text-slate-400">Préstamos más recientes</h3>
+              <div className="space-y-4">
+                {loans.slice(0, 5).map(l => (
+                  <div key={l.id} className="flex justify-between items-center p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-slate-100 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-white shadow-sm border rounded-xl flex items-center justify-center font-black text-slate-600 uppercase">{l.clientName[0]}</div>
+                      <div>
+                        <p className="font-black text-slate-800">{l.clientName}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Cédula: {l.clientId}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-emerald-600">{formatCurrency(l.currentBalance)}</p>
+                      <p className="text-[10px] font-bold text-slate-300 uppercase">Balance actual</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loans.map(loan => (
+              <div key={loan.id} onClick={() => setSelectedLoan(loan)} className="bg-white p-8 rounded-[2rem] border shadow-sm hover:shadow-xl hover:border-emerald-200 transition-all cursor-pointer group relative overflow-hidden">
+                <div className="flex justify-between items-start mb-6">
+                   <div className="w-12 h-12 bg-slate-100 group-hover:bg-emerald-600 group-hover:text-white rounded-xl flex items-center justify-center font-black transition-all text-slate-500 uppercase">{loan.clientName[0]}</div>
+                   <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{loan.interestRate}% INT.</span>
+                </div>
+                <h4 className="font-black text-lg mb-1 text-slate-800">{loan.clientName}</h4>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{loan.clientId}</p>
+                <div className="pt-4 border-t border-slate-50 flex justify-between items-end">
+                   <div>
+                     <p className="text-[10px] font-black text-slate-300 uppercase mb-1">Saldo</p>
+                     <p className="font-black text-xl text-slate-800 leading-none">{formatCurrency(loan.currentBalance)}</p>
+                   </div>
+                   <ChevronRight className="text-slate-200 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Modal: Socio Detalle */}
+      {selectedLoan && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-end z-[100]">
+           <div className="w-full max-w-xl bg-white h-full shadow-2xl flex flex-col p-10 animate-in slide-in-from-right duration-300">
+              <div className="flex justify-between items-start mb-10">
+                <div>
+                  <h2 className="text-3xl font-black text-slate-800 tracking-tighter">{selectedLoan.clientName}</h2>
+                  <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">ID: {selectedLoan.clientId}</p>
+                </div>
+                <button onClick={() => setSelectedLoan(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24} className="text-slate-400"/></button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                 <div className="p-6 bg-slate-900 text-white rounded-3xl shadow-lg">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Deuda Vigente</p>
+                    <p className="text-3xl font-black">{formatCurrency(selectedLoan.currentBalance)}</p>
+                 </div>
+                 <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-3xl text-emerald-700">
+                    <p className="text-[10px] font-bold uppercase mb-1">Interés Acordado</p>
+                    <p className="text-3xl font-black">{selectedLoan.interestRate}%</p>
+                 </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+                <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 flex items-center justify-between">
+                   <div>
+                     <p className="text-amber-800 font-black text-sm uppercase">Corte Mensual</p>
+                     <p className="text-amber-600 text-[10px] font-bold">Inyectar {formatCurrency(selectedLoan.currentBalance * (selectedLoan.interestRate/100))} en intereses.</p>
+                   </div>
+                   <button onClick={executeCut} className="bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-md hover:bg-amber-700 transition-colors">CORTE</button>
+                </div>
+
+                <form onSubmit={handlePayment} className="space-y-4">
+                  <h3 className="font-black text-sm uppercase text-slate-400">Registrar Abono</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <input name="paymentAmount" required type="number" step="0.01" placeholder="Monto $" className="p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold" />
+                    <input name="paymentDate" required type="date" defaultValue={new Date().toISOString().split('T')[0]} className="p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold" />
+                  </div>
+                  <button className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-black transition-all">REGISTRAR PAGO</button>
+                </form>
+
+                <div className="pt-6">
+                   <h3 className="font-black text-sm uppercase text-slate-400 mb-4">Historial de Movimientos</h3>
+                   <div className="space-y-3">
+                     {selectedLoan.history?.slice().reverse().map((h, i) => (
+                       <div key={i} className={`p-4 rounded-xl border flex justify-between items-center ${h.type === 'payment' ? 'bg-emerald-50/50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                          <div>
+                             <p className={`font-black text-sm ${h.type === 'payment' ? 'text-emerald-700' : 'text-slate-800'}`}>{h.type === 'payment' ? '-' : '+'}{formatCurrency(h.amount)}</p>
+                             <p className="text-[10px] font-bold text-slate-400 uppercase">{h.description} • {h.date}</p>
+                          </div>
+                          <p className="text-xs font-black text-slate-500">{formatCurrency(h.balanceAfter)}</p>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Modal: Nuevo Socio */}
+      {showNewLoanModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6 z-[110]">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl p-10 animate-in zoom-in duration-300">
+            <h2 className="text-3xl font-black text-slate-800 mb-8 tracking-tighter">Apertura de Crédito</h2>
+            <form onSubmit={handleCreateLoan} className="space-y-6">
+              <input required name="clientName" placeholder="Nombre completo del socio" className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold" />
+              <input required name="clientId" placeholder="Cédula de Identidad" className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Capital Inicial ($)</label>
+                  <input required name="principal" type="number" step="0.01" placeholder="0.00" className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Tasa Interés (%)</label>
+                  <input required name="rate" type="number" defaultValue="10" step="0.1" className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold" />
+                </div>
+              </div>
+              <input required name="startDate" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold" />
+              <div className="flex gap-4 pt-4">
+                 <button type="button" onClick={() => setShowNewLoanModal(false)} className="flex-1 py-4 bg-slate-50 text-slate-400 font-black rounded-2xl hover:bg-slate-100 transition-colors">CANCELAR</button>
+                 <button type="submit" className="flex-1 py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl hover:bg-emerald-700 transition-all">CREAR SOCIO</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Recibo Impresión */}
+      {receiptToPrint && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 z-[200]">
+           <div className="bg-white rounded-[2rem] p-10 max-w-sm w-full text-center space-y-6 shadow-2xl animate-in zoom-in duration-300">
+              <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto" />
+              <h3 className="text-2xl font-black text-slate-800">Pago Exitoso</h3>
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                 <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Comprobante para {receiptToPrint.clientName}</p>
+                 <p className="text-4xl font-black text-emerald-600">{formatCurrency(receiptToPrint.amount)}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-slate-300 uppercase">Saldo Restante</p>
+                <p className="text-xl font-black text-slate-800 tracking-tight">{formatCurrency(receiptToPrint.remainingBalance)}</p>
+              </div>
+              <div className="flex gap-3 pt-4">
+                 <button onClick={() => window.print()} className="flex-1 py-4 bg-slate-900 text-white font-black rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg hover:bg-black">
+                    <Printer size={16}/> IMPRIMIR TICKET
+                 </button>
+                 <button onClick={() => setReceiptToPrint(null)} className="flex-1 py-4 bg-white border border-slate-200 font-black rounded-2xl text-xs hover:bg-slate-50">CERRAR</button>
+              </div>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Utils
+function NavItem({ icon, label, active, onClick }) {
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl font-black text-sm transition-all ${active ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}>
+      {icon} {label}
+    </button>
+  );
+}
+
+function StatCard({ title, value, icon, color }) {
+  const c = {
+    emerald: "bg-emerald-50 text-emerald-600",
+    blue: "bg-blue-50 text-blue-600",
+    slate: "bg-slate-50 text-slate-600"
+  };
+  return (
+    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${c[color]}`}>
+        {icon}
+      </div>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+      <h3 className="text-2xl font-black text-slate-800">{value}</h3>
+    </div>
+  );
+}
+
+// Mock auth for simplified flow
+async function signInAnonymously(auth) {
+  // En producción, esto usaría el método real de Firebase Auth
+  // Por ahora lo simulamos para que la App no falle sin tokens
+  return { user: { uid: 'demo-user-id' } };
+}
