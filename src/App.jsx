@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Printer, 
   Share2, 
@@ -14,388 +14,544 @@ import {
   Menu,
   Grid,
   List,
-  Database
+  Database,
+  Filter,
+  ChevronRight,
+  X,
+  SlidersHorizontal,
+  Download,
+  Upload,
+  Edit3,
+  Save,
+  Clock,
+  User,
+  History,
+  Trash2,
+  Plus,
+  FileSpreadsheet
 } from 'lucide-react';
 
-// --- BASE DE DATOS MOCK (DATOS NEUTROS) ---
-// (sin cambios, copiada tal cual)
-const CATALOG_DB = [
-  {
-    id: 1,
-    sku: "VO-88-SYN",
-    name: "Filtro de Aceite Blindado (Spin-On)",
-    brand: "Valvoline / OEM Spec",
-    category: "Filtración",
-    oem_ref: "90915-YZZF1",
-    line: "Professional Series - Synthetic Media",
-    description: "Elemento filtrante de alto flujo diseñado para lubricantes sintéticos. Cuenta con válvula anti-retorno de silicona y carcasa reforzada para presiones de operación de hasta 120 PSI.",
-    image_preview: "https://placehold.co/400x400/e2e8f0/1e293b?text=VO-88-SYN",
-    quickSpecs: {
-      thread: "M20 x 1.5",
-      height: "85 mm",
-      outerDiameter: "76 mm",
-      valve: "Sí (12 PSI)"
-    },
-    specs: [
-      { label: "Tipo de Filtro", value: "Blindado (Spin-on)" },
-      { label: "Medio Filtrante", value: "Malla Sintética / Celulosa Reforzada" },
-      { label: "Eficiencia", value: "99% @ 20 Micrones" },
-      { label: "Válvula Anti-Drenaje", value: "Sí - Silicona Roja" },
-      { label: "Válvula Bypass", value: "12-15 PSI" },
-      { label: "Intervalo", value: "10,000 km" }
-    ],
-    applications: [
-      { make: "TOYOTA", model: "Corolla 1.8L", years: "2009-2019" },
-      { make: "TOYOTA", model: "Yaris 1.5L", years: "2006-2018" },
-      { make: "TOYOTA", model: "RAV4 2.4L", years: "2005-2012" },
-      { make: "SUZUKI", model: "Grand Vitara 2.4L", years: "2008-2015" }
-    ],
-    crossReference: [
-      { brand: "TOYOTA OEM", part: "90915-YZZF1" },
-      { brand: "WIX", part: "51348" },
-      { brand: "FRAM", part: "PH4967" },
-      { brand: "K&N", part: "HP-1003" }
-    ],
-    images: [
-      { url: "https://placehold.co/600x600/e2e8f0/1e293b?text=VO-88+Main", alt: "Principal" },
-      { url: "https://placehold.co/600x600/f1f5f9/334155?text=Diagrama+Tecnico", alt: "Diagrama" },
-      { url: "https://placehold.co/600x600/f8fafc/475569?text=Base+M20", alt: "Base" }
-    ]
-  },
-  {
-    id: 2,
-    sku: "AF-2024-PRO",
-    name: "Filtro de Aire Panel",
-    brand: "Global Filters",
-    category: "Filtración",
-    oem_ref: "17801-21050",
-    line: "Heavy Duty Protection",
-    description: "Filtro de aire de panel de alta capacidad. Papel plisado con resina fenólica para resistir humedad. Borde de uretano flexible para sellado perfecto.",
-    image_preview: "https://placehold.co/400x400/fef3c7/78350f?text=AF-2024",
-    quickSpecs: {
-      length: "240 mm",
-      width: "176 mm",
-      height: "52 mm",
-      material: "Celulosa"
-    },
-    specs: [
-      { label: "Tipo", value: "Panel Flexible" },
-      { label: "Material", value: "Celulosa con Resina" },
-      { label: "Flujo de Aire", value: "350 CFM" },
-      { label: "Sello", value: "Poliuretano Expandido" }
-    ],
-    applications: [
-      { make: "TOYOTA", model: "Yaris 1.5L", years: "2010-2018" },
-      { make: "TOYOTA", model: "Prius C", years: "2012-2019" }
-    ],
-    crossReference: [
-      { brand: "TOYOTA OEM", part: "17801-21050" },
-      { brand: "WIX", part: "49100" },
-      { brand: "K&N", part: "33-2360" }
-    ],
-    images: [
-      { url: "https://placehold.co/600x600/fef3c7/78350f?text=AF-2024+Main", alt: "Principal" },
-      { url: "https://placehold.co/600x600/fffbeb/92400e?text=Media+Filtrante", alt: "Detalle" }
-    ]
-  },
-  {
-    id: 3,
-    sku: "BP-0880-CER",
-    name: "Pastillas de Freno Delanteras",
-    brand: "StopTech Ceramic",
-    category: "Frenos",
-    oem_ref: "04465-02220",
-    line: "Ceramic Low Dust",
-    description: "Formulación cerámica avanzada para frenado silencioso y bajo polvo. Incluye shims antirruido y kit de herrajes de instalación.",
-    image_preview: "https://placehold.co/400x400/fee2e2/991b1b?text=BP-0880",
-    quickSpecs: {
-      position: "Eje Delantero",
-      material: "Cerámica",
-      width: "131.5 mm",
-      sensor: "Acústico"
-    },
-    specs: [
-      { label: "Posición", value: "Delanteras" },
-      { label: "Composición", value: "Cerámica GG" },
-      { label: "Coeficiente Fricción", value: "0.38 - 0.42" },
-      { label: "Incluye Hardware", value: "Sí" }
-    ],
-    applications: [
-      { make: "TOYOTA", model: "Corolla", years: "2009-2018" },
-      { make: "TOYOTA", model: "Matrix", years: "2009-2014" }
-    ],
-    crossReference: [
-      { brand: "OEM", part: "04465-02220" },
-      { brand: "TRW", part: "GDB3425" },
-      { brand: "BENDIX", part: "DB1785" }
-    ],
-    images: [
-      { url: "https://placehold.co/600x600/fee2e2/991b1b?text=BP-0880+Set", alt: "Set Completo" }
-    ]
-  }
-];
+// --- UTILIDADES ---
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleString('es-ES', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+};
 
-// --- NUEVA PESTAÑA: VISTA TABULAR DE LA BASE DE DATOS ---
-const DatabaseView = ({ onBack }) => {
+// --- PARSER CSV A JSON (NUEVO) ---
+const parseCSV = (csvText) => {
+  const lines = csvText.split('\n');
+  const result = [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    
+    // Regex compleja para manejar comas dentro de comillas (ej: "Toyota, Inc")
+    const obj = {};
+    const currentline = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+
+    headers.forEach((header, index) => {
+      let val = currentline[index] ? currentline[index].replace(/^"|"$/g, '').trim() : '';
+      obj[header] = val;
+    });
+
+    // Mapeo inteligente de CSV plano a Estructura Compleja de la App
+    if (obj.sku) { // Solo si tiene SKU
+        const newProduct = {
+            id: Date.now() + i,
+            sku: obj.sku || 'SIN-SKU',
+            name: obj.name || 'Producto Nuevo',
+            brand: obj.brand || 'Genérico',
+            category: obj.category || 'General',
+            oem_ref: obj.oem_ref || '',
+            line: obj.line || '',
+            description: obj.description || '',
+            image_preview: obj.image_url || 'https://placehold.co/400x400/0f172a/fbbf24?text=NO+IMG',
+            // Reconstruimos la estructura anidada
+            quickSpecs: {
+                info: obj.specs_info || ''
+            },
+            specs: [
+                { label: "Origen", value: "Importado (CSV)" }
+            ],
+            // Asumimos que el CSV trae al menos un vehículo principal
+            applications: obj.make ? [{
+                make: obj.make,
+                model: obj.model || 'Varios',
+                engine: obj.engine || '',
+                years: obj.year || 'Todos'
+            }] : [],
+            crossReference: [],
+            images: []
+        };
+        result.push(newProduct);
+    }
+  }
+  return result;
+};
+
+// --- COMPONENTE DE FILTROS INTELIGENTES (CASCADA) ---
+const SmartFilters = ({ db, filters, onFilterChange, vertical = false }) => {
+  
+  const availableMakes = useMemo(() => {
+    const makes = new Set();
+    db.forEach(p => p.applications?.forEach(app => makes.add(app.make)));
+    return Array.from(makes).sort();
+  }, [db]);
+
+  const availableModels = useMemo(() => {
+    if (!filters.make) return [];
+    const models = new Set();
+    db.forEach(p => {
+      p.applications?.forEach(app => {
+        if (app.make === filters.make) {
+          models.add(app.model);
+        }
+      });
+    });
+    return Array.from(models).sort();
+  }, [db, filters.make]);
+
+  const availableYears = useMemo(() => {
+    if (!filters.make || !filters.model) return [];
+    const years = new Set();
+    db.forEach(p => {
+      p.applications?.forEach(app => {
+        if (app.make === filters.make && app.model === filters.model) {
+          years.add(app.years);
+        }
+      });
+    });
+    return Array.from(years).sort();
+  }, [db, filters.make, filters.model]);
+
+  const availableCategories = useMemo(() => {
+    let relevantProducts = db;
+    if (filters.make) {
+      relevantProducts = relevantProducts.filter(p => 
+        p.applications?.some(a => a.make === filters.make && (!filters.model || a.model === filters.model))
+      );
+    }
+    const cats = new Set(relevantProducts.map(p => p.category));
+    return Array.from(cats).sort();
+  }, [db, filters.make, filters.model]);
+
+  const containerClass = vertical 
+    ? "flex flex-col gap-4 w-full" 
+    : "grid grid-cols-1 md:grid-cols-4 gap-4 w-full";
+
+  const selectClass = "w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5 shadow-sm disabled:bg-slate-800 disabled:text-slate-600 transition-all";
+  const labelClass = "block mb-1 text-xs font-bold text-slate-500 uppercase tracking-wider";
+
   return (
-    <div className="animate-in slide-in-from-right-4 duration-300">
-      <div className="mb-6 flex justify-between items-center">
-        <button 
-          onClick={onBack}
-          className="flex items-center text-sm font-medium text-slate-500 hover:text-blue-700 transition-colors bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm hover:shadow-md"
+    <div className={containerClass}>
+      <div className="w-full">
+        <label className={labelClass}>Marca</label>
+        <select 
+          value={filters.make} 
+          onChange={(e) => onFilterChange('make', e.target.value)}
+          className={selectClass}
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver al Catálogo
-        </button>
-        <h2 className="text-2xl font-black text-slate-800">Base de Datos del Sistema</h2>
+          <option value="">Todas las marcas</option>
+          {availableMakes.map(make => (
+            <option key={make} value={make}>{make}</option>
+          ))}
+        </select>
       </div>
 
-      <div className="bg-white shadow-xl border border-slate-200 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-100">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Nombre</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Marca</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Categoría</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">OEM Ref</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Línea</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Descripción (resumida)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {CATALOG_DB.map((product) => (
-                <tr key={product.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{product.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-medium text-slate-800">{product.sku}</td>
-                  <td className="px-6 py-4 text-sm text-slate-800">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{product.brand}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{product.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-600">{product.oem_ref}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{product.line}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">{product.description}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="w-full">
+        <label className={labelClass}>Modelo</label>
+        <select 
+          value={filters.model} 
+          onChange={(e) => onFilterChange('model', e.target.value)}
+          className={selectClass}
+          disabled={!filters.make}
+        >
+          <option value="">{filters.make ? 'Seleccionar Modelo' : '---'}</option>
+          {availableModels.map(model => (
+            <option key={model} value={model}>{model}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="w-full">
+        <label className={labelClass}>Año / Rango</label>
+        <select 
+          value={filters.year} 
+          onChange={(e) => onFilterChange('year', e.target.value)}
+          className={selectClass}
+          disabled={!filters.model}
+        >
+          <option value="">{filters.model ? 'Todos los años' : '---'}</option>
+          {availableYears.map(year => (
+            <option key={year} value={year}>{year}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="w-full">
+        <label className={labelClass}>Categoría</label>
+        <select 
+          value={filters.category} 
+          onChange={(e) => onFilterChange('category', e.target.value)}
+          className={selectClass}
+        >
+          <option value="">Todas</option>
+          {availableCategories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+};
+
+// --- MODAL DE EDICIÓN DE PRODUCTO ---
+const ProductEditModal = ({ product, isOpen, onClose, onSave, currentUser }) => {
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    if (product) {
+      setFormData(JSON.parse(JSON.stringify(product))); // Deep copy
+    } else {
+        // Default empty product
+        setFormData({
+            sku: '', name: '', brand: '', category: '', oem_ref: '', line: '', description: '',
+            image_preview: 'https://placehold.co/400x400/0f172a/fbbf24?text=NEW',
+            quickSpecs: {}, specs: [], applications: [], crossReference: [], images: []
+        });
+    }
+  }, [product, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData, currentUser);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="bg-slate-900 px-6 py-4 flex justify-between items-center border-b border-amber-500/30">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <Edit3 className="w-5 h-5 text-amber-500" />
+            {product ? `Editar: ${product.sku}` : 'Nuevo Producto'}
+          </h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto custom-scrollbar flex-grow space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">SKU / Código</label>
+              <input required name="sku" value={formData.sku || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">OEM Ref</label>
+              <input name="oem_ref" value={formData.oem_ref || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre del Producto</label>
+            <input required name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Marca</label>
+              <input required name="brand" value={formData.brand || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Categoría</label>
+              <input required name="category" value={formData.category || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
+            </div>
+          </div>
+
+          <div>
+             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
+             <textarea name="description" value={formData.description || ''} onChange={handleChange} rows={3} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none text-sm"></textarea>
+          </div>
+          
+          <div className="p-3 bg-amber-50 rounded text-xs text-amber-800 border border-amber-200 flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            Nota: Para editar especificaciones técnicas complejas o aplicaciones, use la carga masiva CSV/JSON. Esta edición es rápida.
+          </div>
+        </form>
+
+        <div className="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-3">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 font-medium hover:text-slate-900">Cancelar</button>
+          <button onClick={handleSubmit} className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded shadow-lg transition-colors flex items-center gap-2">
+            <Save className="w-4 h-4" /> Guardar Cambios
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-// --- COMPONENTE DETALLE DE PRODUCTO (sin cambios) ---
-const ProductDetail = ({ product, onBack }) => {
-  const [activeTab, setActiveTab] = useState('specs');
-  const [activeImage, setActiveImage] = useState(0);
-
-  if (!product) return null;
-
+// --- COMPONENTE TARJETA DE PRODUCTO ---
+const ProductCard = ({ product, onClick, viewMode }) => {
   return (
-    <div className="animate-in slide-in-from-right-4 duration-300">
-      {/* Barra de Navegación Contextual */}
-      <div className="mb-4 flex justify-between items-center">
-        <button 
-          onClick={onBack}
-          className="flex items-center text-sm font-medium text-slate-500 hover:text-blue-700 transition-colors bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm hover:shadow-md"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver al Catálogo
-        </button>
-        <div className="hidden md:block text-xs font-mono text-slate-400">
-          ID_DB: {product.sku}
+    <div 
+      onClick={onClick}
+      className={`group bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-2xl hover:border-amber-400 transition-all duration-300 cursor-pointer flex ${viewMode === 'list' ? 'flex-row' : 'flex-col'}`}
+    >
+      <div className={`${viewMode === 'list' ? 'w-48 h-full' : 'w-full h-48'} bg-slate-900 relative overflow-hidden flex items-center justify-center p-4 group-hover:bg-slate-800 transition-colors`}>
+        <img 
+          src={product.image_preview} 
+          alt={product.sku}
+          className="max-w-full max-h-full object-contain mix-blend-normal group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x400/0f172a/fbbf24?text=NO+IMG"; }}
+        />
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="bg-amber-500 text-slate-900 p-1.5 rounded-full shadow-lg block">
+            <ChevronRight className="w-4 h-4" />
+          </span>
         </div>
       </div>
 
-      <div className="bg-white shadow-xl border border-slate-200 rounded-xl overflow-hidden">
+      <div className={`p-5 flex flex-col flex-grow ${viewMode === 'list' ? 'justify-center' : ''}`}>
+        <div className="flex justify-between items-start mb-2">
+          <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600 uppercase tracking-wider">
+            {product.brand}
+          </span>
+          <span className="text-xs font-mono text-slate-400">{product.category}</span>
+        </div>
         
-        {/* Encabezado Técnico Puro */}
-        <div className="bg-slate-800 text-white p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-5">
-            <Package className="w-32 h-32" />
+        <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-600 transition-colors mb-1">
+          {product.sku}
+        </h3>
+        
+        <p className="text-sm text-slate-600 line-clamp-2 mb-4 leading-relaxed">
+          {product.name}
+        </p>
+
+        <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="flex flex-col">
+            <span className="text-slate-400 mb-0.5">OEM Ref:</span>
+            <span className="font-mono font-medium text-slate-700">{product.oem_ref}</span>
           </div>
-          <div className="flex flex-col md:flex-row justify-between md:items-start gap-6 relative z-10">
+          {viewMode !== 'list' && (
+            <button className="text-amber-600 font-medium text-xs hover:underline flex items-center gap-1">
+              Ver Ficha <ArrowLeft className="w-3 h-3 rotate-180" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- VISTA DETALLE CON HISTORIAL ---
+const ProductDetail = ({ product, onBack, onEdit, historyLog }) => {
+  const [activeTab, setActiveTab] = useState('specs');
+  
+  if (!product) return null;
+
+  // Filtrar historial solo para este producto
+  const productHistory = historyLog.filter(h => h.sku === product.sku).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  return (
+    <div className="animate-in slide-in-from-right-4 duration-300 pb-20">
+      <div className="mb-6 flex justify-between items-center">
+        <button onClick={onBack} className="flex items-center text-sm font-medium text-slate-500 hover:text-amber-600 transition-colors">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Volver a resultados
+        </button>
+        <button 
+          onClick={() => onEdit(product)}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg text-sm font-bold transition-colors"
+        >
+          <Edit3 className="w-4 h-4" /> Editar Producto
+        </button>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        {/* Header Producto GALAXY BLUE */}
+        <div className="bg-slate-900 text-white p-8 relative overflow-hidden border-b-4 border-amber-500">
+          <div className="absolute -top-10 -right-10 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl"></div>
+          <div className="relative z-10 flex flex-col md:flex-row justify-between gap-6">
             <div>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="bg-slate-600 text-slate-200 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider border border-slate-500">
-                  {product.brand}
-                </span>
-                <span className="bg-slate-700 text-slate-300 text-xs font-medium px-2 py-1 rounded uppercase tracking-wide border border-slate-600">
-                  {product.category}
-                </span>
+              <div className="flex gap-2 mb-3">
+                <span className="bg-amber-500 text-slate-900 text-xs font-bold px-2 py-1 rounded shadow-lg">{product.brand}</span>
+                <span className="bg-slate-700 text-slate-300 text-xs font-medium px-2 py-1 rounded border border-slate-600">{product.category}</span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2 text-white">
-                {product.sku}
-              </h1>
-              <p className="text-slate-300 text-sm md:text-base max-w-2xl font-light">
-                {product.name} - <span className="text-slate-400">{product.line}</span>
-              </p>
+              <h1 className="text-4xl font-black tracking-tight mb-2 text-white">{product.sku}</h1>
+              <p className="text-slate-300 text-lg font-light">{product.name}</p>
             </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <button 
-                onClick={() => window.print()}
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-all backdrop-blur-sm"
-              >
-                <Printer className="w-4 h-4" />
-                <span className="hidden sm:inline">Imprimir Ficha</span>
-              </button>
-              <button className="flex items-center gap-2 bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg">
-                <Share2 className="w-4 h-4" />
-                <span className="hidden sm:inline">Compartir</span>
-              </button>
+            <div className="flex gap-3 items-start">
+               <button className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm transition-all text-slate-300">
+                <Printer className="w-4 h-4" /> Imprimir
+               </button>
+               <button className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-amber-900/20 transition-all">
+                <Share2 className="w-4 h-4" /> Compartir
+               </button>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row">
-          
-          {/* Columna Izquierda: Visualización */}
-          <div className="w-full lg:w-1/3 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 p-6">
-            <div className="mb-6 bg-white border border-slate-200 rounded-lg p-2 shadow-sm">
-              <div className="aspect-square bg-slate-100 rounded-md overflow-hidden relative mb-2 flex items-center justify-center">
-                <img 
-                  src={product.images[activeImage].url} 
-                  alt={product.images[activeImage].alt}
-                  className="w-full h-full object-contain mix-blend-multiply transition-opacity duration-300"
-                />
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveImage(idx)}
-                    className={`w-16 h-16 shrink-0 border-2 rounded-md overflow-hidden transition-all ${activeImage === idx ? 'border-blue-600 ring-2 ring-blue-100 scale-105' : 'border-slate-200 opacity-60 hover:opacity-100'}`}
-                  >
-                    <img src={img.url} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
+          {/* Columna Izquierda */}
+          <div className="w-full lg:w-1/3 p-6 border-r border-slate-200 bg-slate-50">
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm mb-6 flex items-center justify-center min-h-[250px]">
+              <img src={product.image_preview} alt={product.sku} className="w-full h-auto object-contain max-h-[300px]" 
+                   onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x400/0f172a/fbbf24?text=NO+IMG"; }}
+              />
             </div>
-
-            <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Ruler className="w-4 h-4 text-slate-600" /> Medidas Críticas
+            
+            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                <Ruler className="w-4 h-4 text-amber-500" /> Especificaciones Clave
               </h3>
-              <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
-                {Object.entries(product.quickSpecs).map(([key, value]) => (
-                  <div key={key}>
-                    <span className="block text-slate-400 text-xs uppercase mb-1">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                    <span className="font-mono font-bold text-slate-800 text-base border-l-2 border-slate-300 pl-2 block">{value}</span>
+              <div className="space-y-3">
+                {product.quickSpecs && Object.entries(product.quickSpecs).map(([key, value]) => (
+                  <div key={key} className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500 capitalize">{key}</span>
+                    <span className="font-mono font-bold text-slate-800">{value}</span>
                   </div>
                 ))}
               </div>
-            </div>
-            
-            <div className="mt-4 p-3 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-600 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 shrink-0 text-slate-400" />
-              <p className="leading-relaxed">Verifique visualmente la pieza antigua antes de instalar.</p>
             </div>
           </div>
 
-          {/* Columna Derecha: Tabs */}
-          <div className="w-full lg:w-2/3 flex flex-col">
-            <div className="flex border-b border-slate-200 bg-white sticky top-0 z-20 shadow-sm">
-              {[
-                { id: 'specs', label: 'Especificaciones', icon: FileText },
-                { id: 'apps', label: 'Aplicaciones', icon: Car },
-                { id: 'cross', label: 'Referencias Cruzadas', icon: RefreshCw },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium border-b-2 transition-all
-                    ${activeTab === tab.id 
-                      ? 'border-blue-600 text-blue-700 bg-blue-50/50' 
-                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                    }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              ))}
-            </div>
+          {/* Columna Derecha */}
+          <div className="w-full lg:w-2/3">
+             <div className="flex border-b border-slate-200 bg-white">
+               {[
+                 { id: 'specs', label: 'Ficha Técnica', icon: FileText },
+                 { id: 'apps', label: 'Compatibilidad', icon: Car },
+                 { id: 'cross', label: 'Cruce OEM', icon: RefreshCw },
+                 { id: 'history', label: 'Auditoría', icon: History },
+               ].map(tab => (
+                 <button
+                   key={tab.id}
+                   onClick={() => setActiveTab(tab.id)}
+                   className={`flex-1 py-4 text-sm font-medium border-b-2 flex items-center justify-center gap-2 transition-colors ${activeTab === tab.id ? 'border-amber-500 text-slate-900 bg-amber-50/50' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                 >
+                   <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-amber-500' : ''}`} /> {tab.label}
+                 </button>
+               ))}
+             </div>
 
-            <div className="p-6 md:p-8 bg-white flex-grow">
-              
-              {activeTab === 'specs' && (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <h3 className="font-bold text-slate-800 mb-6 text-lg">Detalles Técnicos</h3>
-                  <div className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
-                    <table className="w-full text-sm">
-                      <tbody className="divide-y divide-slate-200">
-                        {product.specs.map((spec, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50 transition-colors group">
-                            <td className="py-4 px-6 bg-slate-50/50 font-medium text-slate-600 w-1/3 group-hover:bg-blue-50/20">{spec.label}</td>
-                            <td className="py-4 px-6 text-slate-800 font-medium">{spec.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="mt-8">
-                    <h4 className="font-bold text-slate-800 mb-3 text-sm flex items-center gap-2">
-                      <Info className="w-4 h-4 text-blue-600" />
-                      Descripción del Producto
-                    </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100">
-                      {product.description}
-                    </p>
-                  </div>
-                </div>
-              )}
+             <div className="p-8 min-h-[400px] bg-white">
+               {activeTab === 'specs' && (
+                 <div className="space-y-6">
+                   <div>
+                     <h3 className="font-bold text-slate-900 mb-3">Descripción Detallada</h3>
+                     <p className="text-slate-600 leading-relaxed text-sm bg-slate-50 p-4 rounded-lg border border-slate-100">
+                       {product.description || "Sin descripción disponible."}
+                     </p>
+                   </div>
+                   {product.specs && (
+                     <div>
+                       <h3 className="font-bold text-slate-900 mb-3">Tabla Técnica</h3>
+                       <table className="w-full text-sm">
+                         <tbody className="divide-y divide-slate-100 border border-slate-100 rounded-lg overflow-hidden block">
+                           {product.specs.map((spec, i) => (
+                             <tr key={i} className="flex">
+                               <td className="w-1/3 bg-slate-50 p-3 font-medium text-slate-600">{spec.label}</td>
+                               <td className="w-2/3 p-3 text-slate-800">{spec.value}</td>
+                             </tr>
+                           ))}
+                         </tbody>
+                       </table>
+                     </div>
+                   )}
+                 </div>
+               )}
 
-              {activeTab === 'apps' && (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex justify-between items-end mb-4">
-                    <h3 className="font-bold text-slate-800 text-lg">Compatibilidad Vehicular</h3>
-                    <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">Total: {product.applications.length}</span>
-                  </div>
-                  <div className="border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-slate-100 text-slate-600 font-semibold uppercase text-xs tracking-wider">
-                        <tr>
-                          <th className="py-3 px-4 border-b border-slate-200">Marca</th>
-                          <th className="py-3 px-4 border-b border-slate-200">Modelo / Motor</th>
-                          <th className="py-3 px-4 border-b border-slate-200">Años</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {product.applications.map((app, idx) => (
-                          <tr key={idx} className="hover:bg-blue-50 transition-colors cursor-default">
-                            <td className="py-3 px-4 font-bold text-slate-700">{app.make}</td>
-                            <td className="py-3 px-4 text-slate-600">{app.model}</td>
-                            <td className="py-3 px-4 text-slate-500 font-mono text-xs bg-slate-50/50">{app.years}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+               {activeTab === 'apps' && (
+                 <div>
+                   <h3 className="font-bold text-slate-900 mb-4">Vehículos Compatibles</h3>
+                   {product.applications && product.applications.length > 0 ? (
+                    <div className="overflow-hidden rounded-lg border border-slate-200">
+                        <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-100 text-slate-600 uppercase text-xs">
+                            <tr>
+                            <th className="py-3 px-4">Marca</th>
+                            <th className="py-3 px-4">Modelo</th>
+                            <th className="py-3 px-4">Motor</th>
+                            <th className="py-3 px-4">Años</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                            {product.applications.map((app, i) => (
+                            <tr key={i} className="hover:bg-amber-50/50 transition-colors">
+                                <td className="py-3 px-4 font-bold text-slate-800">{app.make}</td>
+                                <td className="py-3 px-4 text-slate-600">{app.model}</td>
+                                <td className="py-3 px-4 text-slate-500">{app.engine}</td>
+                                <td className="py-3 px-4 font-mono text-xs text-amber-600 bg-amber-50">{app.years}</td>
+                            </tr>
+                            ))}
+                        </tbody>
+                        </table>
+                    </div>
+                   ) : (
+                       <p className="text-slate-400 italic">No hay aplicaciones registradas.</p>
+                   )}
+                 </div>
+               )}
 
-              {activeTab === 'cross' && (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <h3 className="font-bold text-slate-800 mb-6 text-lg">Referencias Cruzadas</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {product.crossReference.map((ref, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-blue-500 hover:shadow-md hover:bg-blue-50/30 transition-all group cursor-pointer">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{ref.brand}</span>
-                          <span className="font-mono font-bold text-lg text-slate-800 group-hover:text-blue-700">{ref.part}</span>
+               {activeTab === 'cross' && (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 border border-amber-200 bg-amber-50 rounded-lg">
+                      <span className="text-xs font-bold text-amber-600 uppercase block mb-1">OEM / Original</span>
+                      <span className="text-xl font-black text-slate-900 font-mono tracking-tight">{product.oem_ref}</span>
+                    </div>
+                    {product.crossReference && product.crossReference.map((ref, i) => (
+                      <div key={i} className="p-4 border border-slate-200 rounded-lg flex justify-between items-center group hover:border-amber-400 transition-colors">
+                        <div>
+                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1">{ref.brand}</span>
+                          <span className="text-lg font-bold text-slate-700 font-mono">{ref.part}</span>
                         </div>
-                        <button className="text-slate-300 group-hover:text-blue-500 transition-colors bg-white p-2 rounded-full shadow-sm border border-slate-100">
-                          <Share2 className="w-4 h-4" />
-                        </button>
+                        <RefreshCw className="w-4 h-4 text-slate-300 group-hover:text-amber-500" />
                       </div>
                     ))}
-                  </div>
-                </div>
-              )}
+                 </div>
+               )}
 
-            </div>
+               {activeTab === 'history' && (
+                   <div className="animate-in fade-in duration-300">
+                       <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                           <Clock className="w-4 h-4 text-slate-400" /> Historial de Modificaciones
+                       </h3>
+                       {productHistory.length > 0 ? (
+                           <div className="relative border-l-2 border-slate-200 ml-3 space-y-6">
+                               {productHistory.map((log, idx) => (
+                                   <div key={idx} className="ml-6 relative">
+                                       <span className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-amber-500 border-2 border-white ring-1 ring-slate-200"></span>
+                                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1">
+                                           <span className="text-sm font-bold text-slate-800">{log.action}</span>
+                                           <span className="text-xs text-slate-400 font-mono">{formatDate(log.date)}</span>
+                                       </div>
+                                       <p className="text-xs text-slate-500 mb-1">Por: <span className="font-medium text-slate-700">{log.user}</span></p>
+                                       {log.details && (
+                                           <div className="bg-slate-50 p-2 rounded text-xs text-slate-600 font-mono border border-slate-100">
+                                               {log.details}
+                                           </div>
+                                       )}
+                                   </div>
+                               ))}
+                           </div>
+                       ) : (
+                           <div className="text-center py-10 text-slate-400 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                               <p>No hay registros de cambios para este producto.</p>
+                           </div>
+                       )}
+                   </div>
+               )}
+             </div>
           </div>
         </div>
       </div>
@@ -403,303 +559,248 @@ const ProductDetail = ({ product, onBack }) => {
   );
 };
 
-// --- COMPONENTE DE BÚSQUEDA (con BÚSQUEDA AVANZADA añadida) ---
-const CatalogSearch = ({ onSelectProduct }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("all"); // all, sku, vehicle, cross, advanced
-  const [viewMode, setViewMode] = useState("grid"); // grid, list
-
-  // Estados para búsqueda avanzada
-  const [makeFilter, setMakeFilter] = useState('');
-  const [modelFilter, setModelFilter] = useState('');
-  const [yearFilter, setYearFilter] = useState('');
-  const [oemFilter, setOemFilter] = useState('');
-  const [descFilter, setDescFilter] = useState('');
-  const [skuFilter, setSkuFilter] = useState('');
-
-  // Lógica de filtrado mejorada
-  const filteredProducts = useMemo(() => {
-    let result = CATALOG_DB;
-
-    const lowerTerm = searchTerm.toLowerCase();
-
-    // Filtro general por texto (siempre se aplica si hay término)
-    if (searchTerm) {
-      result = result.filter(p => {
-        return (
-          p.sku.toLowerCase().includes(lowerTerm) ||
-          p.name.toLowerCase().includes(lowerTerm) ||
-          p.description.toLowerCase().includes(lowerTerm) ||
-          p.oem_ref.toLowerCase().includes(lowerTerm) ||
-          p.applications.some(a => 
-            a.make.toLowerCase().includes(lowerTerm) || 
-            a.model.toLowerCase().includes(lowerTerm) ||
-            a.years.toLowerCase().includes(lowerTerm)
-          ) ||
-          p.crossReference.some(c => 
-            c.part.toLowerCase().includes(lowerTerm) ||
-            c.brand.toLowerCase().includes(lowerTerm)
-          )
-        );
+// --- VISTA BASE DE DATOS (TABULAR) ---
+const DatabaseView = ({ db, filters, onFilterChange, onEdit, historyLog }) => {
+  const filteredData = useMemo(() => {
+    return db.filter(item => {
+      const matchesVehicle = item.applications?.some(app => {
+        const makeMatch = !filters.make || app.make === filters.make;
+        const modelMatch = !filters.model || app.model === filters.model;
+        const yearMatch = !filters.year || app.years === filters.year;
+        return makeMatch && modelMatch && yearMatch;
       });
-    }
 
-    // Filtro específico según tipo
-    if (filterType === 'sku') {
-      result = result.filter(p => 
-        p.sku.toLowerCase().includes(lowerTerm) || p.oem_ref.toLowerCase().includes(lowerTerm)
-      );
-    } else if (filterType === 'vehicle') {
-      result = result.filter(p => 
-        p.applications.some(a => 
-          a.make.toLowerCase().includes(lowerTerm) || 
-          a.model.toLowerCase().includes(lowerTerm) ||
-          a.years.includes(lowerTerm)
-        )
-      );
-    } else if (filterType === 'cross') {
-      result = result.filter(p => 
-        p.crossReference.some(c => 
-          c.part.toLowerCase().includes(lowerTerm) || 
-          c.brand.toLowerCase().includes(lowerTerm)
-        ) || p.oem_ref.toLowerCase().includes(lowerTerm)
-      );
-    } else if (filterType === 'advanced') {
-      // Filtros avanzados (AND)
-      const hasAdvanced = makeFilter || modelFilter || yearFilter || oemFilter || descFilter || skuFilter;
-      if (hasAdvanced) {
-        result = result.filter(p => {
-          let match = true;
+      const catMatch = !filters.category || item.category === filters.category;
+      
+      const text = filters.search?.toLowerCase() || '';
+      const textMatch = !text || 
+        item.sku.toLowerCase().includes(text) || 
+        item.name.toLowerCase().includes(text) ||
+        item.oem_ref.toLowerCase().includes(text);
 
-          if (makeFilter) {
-            match = match && p.applications.some(a => a.make.toLowerCase().includes(makeFilter.toLowerCase()));
-          }
-          if (modelFilter) {
-            match = match && p.applications.some(a => a.model.toLowerCase().includes(modelFilter.toLowerCase()));
-          }
-          if (yearFilter) {
-            match = match && p.applications.some(a => a.years.includes(yearFilter));
-          }
-          if (oemFilter) {
-            match = match && p.oem_ref.toLowerCase().includes(oemFilter.toLowerCase());
-          }
-          if (descFilter) {
-            const ld = descFilter.toLowerCase();
-            match = match && (p.description.toLowerCase().includes(ld) || p.name.toLowerCase().includes(ld));
-          }
-          if (skuFilter) {
-            const ls = skuFilter.toLowerCase();
-            match = match && (p.sku.toLowerCase().includes(ls) || p.oem_ref.toLowerCase().includes(ls));
-          }
-
-          return match;
-        });
-      }
-      // Si no hay filtros avanzados llenos, solo se aplica el searchTerm general
-    }
-
-    return result;
-  }, [searchTerm, filterType, makeFilter, modelFilter, yearFilter, oemFilter, descFilter, skuFilter]);
+      return (item.applications ? matchesVehicle : true) && catMatch && textMatch;
+    });
+  }, [db, filters]);
 
   return (
     <div className="animate-in fade-in duration-300">
-      {/* Header de Búsqueda */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-        <h2 className="text-2xl font-black text-slate-800 mb-4 flex items-center gap-2">
-          <Search className="w-6 h-6 text-blue-600" />
-          Buscador de Catálogo
-        </h2>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+          <h2 className="font-bold text-slate-700 flex items-center gap-2">
+            <Database className="w-5 h-5 text-amber-600" />
+            Inventario Maestro
+          </h2>
+          <div className="text-xs text-slate-500">
+            Registros: <span className="font-bold text-slate-800">{filteredData.length}</span>
+          </div>
+        </div>
         
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Barra Principal */}
-          <div className="flex-grow relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-slate-400" />
-            </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out sm:text-sm shadow-inner"
-              placeholder="Buscar por código, vehículo, marca..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              autoFocus
-            />
-          </div>
-
-          {/* Filtros */}
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-            {[
-              { id: 'all', label: 'Todo' },
-              { id: 'sku', label: 'Código / SKU' },
-              { id: 'vehicle', label: 'Vehículo' },
-              { id: 'cross', label: 'Cruce / OEM' },
-              { id: 'advanced', label: 'Avanzada' }
-            ].map(f => (
-              <button
-                key={f.id}
-                onClick={() => setFilterType(f.id)}
-                className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium border transition-colors flex items-center gap-2
-                  ${filterType === f.id 
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
-                    : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                  }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+        <div className="p-4 bg-white border-b border-slate-100">
+           <SmartFilters db={db} filters={filters} onFilterChange={onFilterChange} />
         </div>
 
-        {/* Panel de Búsqueda Avanzada */}
-        {filterType === 'advanced' && (
-          <div className="mt-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <Search className="w-5 h-5 text-blue-600" />
-              Filtros Avanzados
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Marca</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ej: TOYOTA"
-                  value={makeFilter}
-                  onChange={e => setMakeFilter(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Modelo</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ej: Corolla"
-                  value={modelFilter}
-                  onChange={e => setModelFilter(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Año</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ej: 2015 o 2009-2019"
-                  value={yearFilter}
-                  onChange={e => setYearFilter(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Código Original (OEM)</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ej: 90915-YZZF1"
-                  value={oemFilter}
-                  onChange={e => setOemFilter(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Palabras clave en descripción"
-                  value={descFilter}
-                  onChange={e => setDescFilter(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Código / SKU</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ej: VO-88-SYN"
-                  value={skuFilter}
-                  onChange={e => setSkuFilter(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Resultados */}
-      <div className="mb-4 flex justify-between items-center px-2">
-        <span className="text-sm text-slate-500 font-medium">
-          Mostrando {filteredProducts.length} resultado{filteredProducts.length !== 1 ? 's' : ''}
-        </span>
-        <div className="flex bg-white rounded-lg border border-slate-300 p-1">
-          <button 
-            onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-slate-100 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <Grid className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-slate-100 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <List className="w-4 h-4" />
-          </button>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-100">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">SKU</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Producto</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Marca</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">OEM</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Aplicaciones</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Modificado</th>
+                <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Acción</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-200">
+              {filteredData.map((product) => {
+                  const lastMod = historyLog.filter(h => h.sku === product.sku).sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+                  return (
+                    <tr key={product.id || product.sku} className="hover:bg-amber-50/30 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="font-mono font-bold text-amber-600">{product.sku}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-slate-900">{product.name}</div>
+                        <div className="text-xs text-slate-500">{product.category}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                        <span className="px-2 py-1 rounded bg-slate-100 text-xs font-semibold">{product.brand}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-600">{product.oem_ref}</td>
+                    <td className="px-6 py-4 text-sm text-slate-500">
+                        <div className="flex -space-x-2 overflow-hidden max-w-[150px]">
+                        {product.applications && product.applications.slice(0,3).map((a,i) => (
+                            <div key={i} className="inline-block px-2 py-0.5 bg-slate-100 border border-white rounded-full text-[10px] z-0">
+                            {a.make}
+                            </div>
+                        ))}
+                        </div>
+                    </td>
+                    <td className="px-6 py-4 text-xs text-slate-400">
+                         {lastMod ? (
+                             <div>
+                                 <div>{formatDate(lastMod.date).split(',')[0]}</div>
+                                 <div className="text-[10px]">{lastMod.user}</div>
+                             </div>
+                         ) : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onClick={() => onEdit(product)} className="text-slate-400 hover:text-amber-600 p-2 rounded-lg transition-colors">
+                        <Edit3 className="w-4 h-4" />
+                        </button>
+                    </td>
+                    </tr>
+                  )
+              })}
+            </tbody>
+          </table>
+          {filteredData.length === 0 && (
+             <div className="text-center py-12 text-slate-400">
+               No hay resultados que coincidan con los filtros seleccionados.
+             </div>
+          )}
         </div>
       </div>
-
-      {filteredProducts.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300">
-          <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Search className="w-8 h-8 text-slate-300" />
-          </div>
-          <h3 className="text-lg font-medium text-slate-900">No se encontraron productos</h3>
-          <p className="text-slate-500 mt-1">Intenta ajustar los filtros o buscar por otro término.</p>
-        </div>
-      ) : (
-        <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-          {filteredProducts.map(product => (
-            <div 
-              key={product.id}
-              onClick={() => onSelectProduct(product)}
-              className={`bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-blue-400 transition-all cursor-pointer group flex ${viewMode === 'list' ? 'flex-row items-center p-4' : 'flex-col'}`}
-            >
-              {/* Imagen */}
-              <div className={`${viewMode === 'list' ? 'w-24 h-24 shrink-0 mr-6' : 'w-full aspect-video'} bg-slate-100 relative overflow-hidden`}>
-                <img 
-                  src={product.image_preview} 
-                  alt={product.sku}
-                  className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-
-              {/* Contenido */}
-              <div className={`p-4 flex flex-col ${viewMode === 'list' ? 'flex-grow justify-center' : ''}`}>
-                <div className="flex justify-between items-start mb-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{product.brand}</span>
-                  <span className="text-xs font-mono text-slate-400">{product.category}</span>
-                </div>
-                <h3 className="font-bold text-slate-800 text-lg mb-1 group-hover:text-blue-600 transition-colors">{product.sku}</h3>
-                <p className="text-sm text-slate-600 line-clamp-2 mb-3 flex-grow">{product.name}</p>
-                
-                <div className="mt-auto pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
-                  <span className="text-slate-400">OEM: <span className="font-mono text-slate-600">{product.oem_ref}</span></span>
-                  <div className="flex gap-1">
-                     {product.applications.slice(0, 2).map((app, i) => (
-                       <span key={i} className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 text-[10px]">{app.make}</span>
-                     ))}
-                     {product.applications.length > 2 && <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 text-[10px]">+</span>}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
 
-// --- APLICACIÓN PRINCIPAL (con pestaña de Base de Datos y navegación mejorada) ---
+// --- APP PRINCIPAL ---
 const AutoCatalogApp = () => {
-  const [currentView, setCurrentView] = useState('search'); // 'search' | 'detail' | 'database'
+  const [currentView, setCurrentView] = useState('search'); 
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [viewMode, setViewMode] = useState('grid');
+  const [currentUser, setCurrentUser] = useState('Admin'); // Simulador de usuario
+  
+  // ESTADO DE LA BASE DE DATOS (Vacía por defecto)
+  const [db, setDb] = useState([]);
+  
+  // ESTADO DE HISTORIAL
+  const [historyLog, setHistoryLog] = useState([]);
+  
+  // ESTADO DE MODALES
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState(null);
+
+  const [filters, setFilters] = useState({
+    make: '', model: '', year: '', category: '', search: ''
+  });
+
+  // --- MANEJO DE ARCHIVOS (CARGA JSON Y CSV) ---
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      const fileName = file.name.toLowerCase();
+
+      reader.onload = (e) => {
+        try {
+          let newData = [];
+          if (fileName.endsWith('.csv')) {
+              // Parsear CSV
+              newData = parseCSV(e.target.result);
+          } else if (fileName.endsWith('.json')) {
+              // Parsear JSON
+              const json = JSON.parse(e.target.result);
+              if (Array.isArray(json)) newData = json;
+          } else {
+              alert("Formato no soportado. Use .csv (Excel) o .json");
+              return;
+          }
+
+          if (newData.length > 0) {
+            setDb(newData);
+            // Log de carga inicial
+            setHistoryLog(prev => [...prev, {
+                date: new Date().toISOString(),
+                user: currentUser,
+                sku: 'SISTEMA',
+                action: 'CARGA MASIVA',
+                details: `Se cargaron ${newData.length} productos desde ${fileName}.`
+            }]);
+            alert(`Base de datos cargada con éxito: ${newData.length} productos.`);
+          } else {
+            alert("El archivo parece estar vacío o tiene un formato incorrecto.");
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error al leer el archivo. Revise el formato.");
+        }
+      };
+      
+      reader.readAsText(file);
+    }
+  };
+
+  // --- MANEJO DE EDICIÓN ---
+  const handleEditClick = (product) => {
+    setProductToEdit(product);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProduct = (updatedProduct, user) => {
+      let actionType = 'ACTUALIZACIÓN';
+      
+      setDb(prevDb => {
+          const index = prevDb.findIndex(p => p.sku === updatedProduct.sku);
+          if (index >= 0) {
+              // Actualizar existente
+              const newDb = [...prevDb];
+              newDb[index] = updatedProduct;
+              return newDb;
+          } else {
+              // Nuevo producto (si implementas botón crear)
+              actionType = 'CREACIÓN';
+              return [...prevDb, { ...updatedProduct, id: Date.now() }];
+          }
+      });
+
+      // Registrar en Historial
+      setHistoryLog(prev => [...prev, {
+          date: new Date().toISOString(),
+          user: user,
+          sku: updatedProduct.sku,
+          action: actionType,
+          details: `Modificación manual de campos.`
+      }]);
+  };
+
+  // Handler centralizado de cambio de filtros
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value };
+      if (key === 'make') { newFilters.model = ''; newFilters.year = ''; }
+      if (key === 'model') { newFilters.year = ''; }
+      return newFilters;
+    });
+  };
+
+  const clearFilters = () => {
+    setFilters({ make: '', model: '', year: '', category: '', search: '' });
+  };
+
+  const filteredProducts = useMemo(() => {
+    return db.filter(product => {
+      const searchTerm = filters.search.toLowerCase();
+      const matchesText = !searchTerm || 
+        product.sku.toLowerCase().includes(searchTerm) || 
+        product.name.toLowerCase().includes(searchTerm) || 
+        product.oem_ref.toLowerCase().includes(searchTerm) ||
+        product.crossReference?.some(c => c.part.toLowerCase().includes(searchTerm));
+
+      const matchesVehicle = product.applications?.some(app => {
+        const makeMatch = !filters.make || app.make === filters.make;
+        const modelMatch = !filters.model || app.model === filters.model;
+        const yearMatch = !filters.year || app.years === filters.year;
+        return makeMatch && modelMatch && yearMatch;
+      });
+
+      const matchesCategory = !filters.category || product.category === filters.category;
+
+      return matchesText && (product.applications ? matchesVehicle : true) && matchesCategory;
+    });
+  }, [filters, db]);
 
   const handleProductSelect = (product) => {
     setSelectedProduct(product);
@@ -707,67 +808,218 @@ const AutoCatalogApp = () => {
     window.scrollTo(0,0);
   };
 
-  const handleBack = () => {
-    setCurrentView('search');
-    setSelectedProduct(null);
+  // DOWNLOAD EJEMPLO CSV
+  const downloadSampleCSV = () => {
+    const csvContent = "sku,name,brand,category,oem_ref,description,image_url,make,model,year,engine\n" + 
+    "FIL-001,Filtro de Aceite Premium,Toyota,Motor,90915-YZZF1,Filtro de alto flujo,https://placehold.co/400x400,TOYOTA,Corolla,2015,1.8L";
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "plantilla_carga.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
       
-      {/* Barra Superior Global */}
-      <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={handleBack}>
-            <div className="bg-blue-600 p-1.5 rounded">
-              <Database className="w-5 h-5 text-white" />
+      {/* HEADER GALAXY BLUE */}
+      <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b border-slate-800">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentView('search')}>
+              <div className="bg-amber-500 p-2 rounded-lg shadow-lg shadow-amber-500/20 group-hover:bg-amber-400 transition-colors">
+                <Database className="w-5 h-5 text-slate-900" />
+              </div>
+              <div className="leading-none">
+                <h1 className="font-black text-xl tracking-tight text-white">GALAXY<span className="text-amber-500">PARTS</span></h1>
+                <p className="text-[10px] text-slate-400 font-medium tracking-[0.2em] uppercase mt-1">Gestión Técnica Centralizada</p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-black text-lg leading-tight tracking-tight">Catálogo<span className="text-blue-400">Técnico</span></h1>
-              <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Base de Datos Centralizada</p>
+            
+            <div className="flex items-center gap-6">
+                <nav className="hidden md:flex items-center gap-1 bg-slate-800 p-1 rounded-lg">
+                <button 
+                    onClick={() => setCurrentView('search')}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${currentView === 'search' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                >
+                    Catálogo
+                </button>
+                <button 
+                    onClick={() => setCurrentView('database')}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${currentView === 'database' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                >
+                    Base de Datos
+                </button>
+                </nav>
+
+                {/* SELECTOR DE USUARIO (SIMULADO) */}
+                <div className="hidden md:flex items-center gap-2 border-l border-slate-700 pl-6">
+                    <span className="text-xs text-slate-500 uppercase font-bold">Modo:</span>
+                    <select 
+                        value={currentUser} 
+                        onChange={(e) => setCurrentUser(e.target.value)}
+                        className="bg-slate-800 text-amber-500 text-xs font-bold py-1 px-2 rounded border border-slate-700 focus:outline-none focus:border-amber-500"
+                    >
+                        <option value="Admin">Administrador</option>
+                        <option value="Técnico">Técnico A</option>
+                        <option value="Gerente">Gerencia</option>
+                    </select>
+                </div>
             </div>
           </div>
-          
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-            <button 
-              onClick={() => setCurrentView('search')}
-              className={`transition-colors pb-1 border-b-2 ${currentView === 'search' ? 'text-white border-blue-400' : 'text-slate-300 border-transparent hover:text-white hover:border-slate-400'}`}
-            >
-              Búsqueda
-            </button>
-            <button 
-              onClick={() => setCurrentView('database')}
-              className={`transition-colors pb-1 border-b-2 ${currentView === 'database' ? 'text-white border-blue-400' : 'text-slate-300 border-transparent hover:text-white hover:border-slate-400'}`}
-            >
-              Base de Datos
-            </button>
-          </div>
-          
-          <button className="md:hidden text-slate-300">
-            <Menu className="w-6 h-6" />
-          </button>
         </div>
       </header>
 
-      {/* Contenido Principal */}
-      <main className="max-w-6xl mx-auto p-4 md:p-6">
-        {currentView === 'search' && (
-          <CatalogSearch onSelectProduct={handleProductSelect} />
-        )}
-        {currentView === 'detail' && (
-          <ProductDetail product={selectedProduct} onBack={handleBack} />
-        )}
-        {currentView === 'database' && (
-          <DatabaseView onBack={handleBack} />
+      {/* CONTENIDO PRINCIPAL */}
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* ESTADO VACÍO (SIN DATOS) */}
+        {db.length === 0 ? (
+             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                 <div className="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                     <FileSpreadsheet className="w-10 h-10 text-slate-400" />
+                 </div>
+                 <h2 className="text-3xl font-bold text-slate-900">La Base de Datos está vacía</h2>
+                 <p className="text-slate-500 max-w-md">
+                    Carga tu inventario usando un archivo Excel (guardado como CSV). 
+                    Es la forma más simple de empezar.
+                 </p>
+                 
+                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                    <label className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-6 rounded-xl shadow-lg shadow-amber-500/30 transition-all flex items-center gap-2 justify-center">
+                        <Upload className="w-5 h-5" />
+                        Cargar CSV / JSON
+                        <input type="file" accept=".csv, .json" onChange={handleFileUpload} className="hidden" />
+                    </label>
+                    <button onClick={downloadSampleCSV} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2 justify-center">
+                        <Download className="w-5 h-5" />
+                        Bajar Plantilla Excel (CSV)
+                    </button>
+                 </div>
+             </div>
+        ) : (
+          <>
+            {currentView === 'search' && (
+            <>
+                {/* HERO SECTION GALAXY */}
+                <div className="bg-slate-900 rounded-2xl shadow-xl overflow-hidden mb-8 border border-slate-800 relative">
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-amber-500/10 to-transparent"></div>
+                <div className="px-6 py-8 md:p-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                    <div>
+                    <h2 className="text-2xl md:text-3xl font-black text-white mb-2">Buscador <span className="text-amber-500">Maestro</span></h2>
+                    <p className="text-slate-400 text-sm">Base de datos activa con {db.length} referencias.</p>
+                    </div>
+                    {/* Buscador de Texto General */}
+                    <div className="relative w-full md:w-96 group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
+                    </div>
+                    <input
+                        type="text"
+                        className="block w-full pl-10 pr-3 py-3 rounded-xl border border-slate-700 bg-slate-950 text-white placeholder-slate-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-inner"
+                        placeholder="Buscar SKU, OEM o Nombre..."
+                        value={filters.search}
+                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                    />
+                    </div>
+                </div>
+
+                {/* BARRA DE FILTROS */}
+                <div className="p-6 bg-slate-50 border-t border-slate-200">
+                    <div className="flex items-center gap-2 mb-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <SlidersHorizontal className="w-4 h-4 text-amber-600" />
+                    Filtros de Vehículo
+                    </div>
+                    <SmartFilters db={db} filters={filters} onFilterChange={handleFilterChange} />
+                    
+                    {(filters.make || filters.category || filters.search) && (
+                    <div className="mt-4 flex flex-wrap gap-2 items-center pt-4 border-t border-slate-200">
+                        <span className="text-xs text-slate-400 mr-2">Filtros activos:</span>
+                        {filters.make && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                            {filters.make} {filters.model && `/ ${filters.model}`}
+                            <button onClick={() => handleFilterChange('make', '')} className="ml-1.5 hover:text-amber-900"><X className="w-3 h-3" /></button>
+                        </span>
+                        )}
+                        <button onClick={clearFilters} className="text-xs text-red-500 hover:text-red-700 font-medium ml-auto underline decoration-dotted">
+                        Limpiar Todo
+                        </button>
+                    </div>
+                    )}
+                </div>
+                </div>
+
+                {/* RESULTADOS */}
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                <h3 className="font-bold text-slate-700 text-lg">
+                    Resultados <span className="text-slate-400 font-normal text-sm ml-2">({filteredProducts.length} encontrados)</span>
+                </h3>
+                <div className="flex bg-white rounded-lg p-1 shadow-sm border border-slate-200">
+                    <button 
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-slate-100 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                    <Grid className="w-4 h-4" />
+                    </button>
+                    <button 
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-100 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                    <List className="w-4 h-4" />
+                    </button>
+                </div>
+                </div>
+
+                {filteredProducts.length > 0 ? (
+                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
+                    {filteredProducts.map(product => (
+                    <ProductCard key={product.id || product.sku} product={product} onClick={() => handleProductSelect(product)} viewMode={viewMode} />
+                    ))}
+                </div>
+                ) : (
+                <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200">
+                    <div className="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                    <Search className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <h3 className="text-slate-900 font-medium">No se encontraron productos</h3>
+                    <p className="text-slate-500 text-sm mt-1">Intenta ajustar tus filtros de búsqueda.</p>
+                </div>
+                )}
+            </>
+            )}
+
+            {currentView === 'detail' && selectedProduct && (
+            <ProductDetail product={selectedProduct} onBack={() => setCurrentView('search')} onEdit={handleEditClick} historyLog={historyLog} />
+            )}
+
+            {currentView === 'database' && (
+            <DatabaseView db={db} filters={filters} onFilterChange={handleFilterChange} onEdit={handleEditClick} historyLog={historyLog} />
+            )}
+          </>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-slate-400 text-xs border-t border-slate-200 mt-8">
-        <p>Sistema de Consulta Técnica</p>
-        <p className="mt-1">Los números de parte OEM se usan solo como referencia.</p>
-      </footer>
+      {/* MODAL DE EDICIÓN GLOBAL */}
+      <ProductEditModal 
+        product={productToEdit} 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        onSave={handleSaveProduct}
+        currentUser={currentUser}
+      />
 
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-auto">
+        <div className="max-w-[1400px] mx-auto px-4 text-center">
+          <Database className="w-8 h-8 text-amber-600 mx-auto mb-4" />
+          <p className="text-sm font-medium text-slate-300">GALAXY PARTS SYSTEM</p>
+          <p className="text-xs text-slate-500 mt-2">Versión 2.1 | Soporte CSV Universal</p>
+        </div>
+      </footer>
     </div>
   );
 };
