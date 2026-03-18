@@ -45,12 +45,12 @@ function AuthProvider({ children }) {
 
   // Lee rol usando el cliente global (supabase) que tiene el JWT activo
   const fetchRole = async (userId) => {
-    const { data } = await supabase
+    const { data } = await supabaseSession
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
       .maybeSingle();
-    return data?.role || 'viewer';
+    return data?.role ?? null;
   };
 
   useEffect(() => {
