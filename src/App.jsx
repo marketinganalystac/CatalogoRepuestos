@@ -717,8 +717,8 @@ tbody td{padding:7px 13px;vertical-align:middle}
 /* ── DECODIFICADOR ── */
 .dec-wrap{background:var(--g1);padding:0 0 24px}
 .dec-section-title{background:linear-gradient(135deg,var(--bd),var(--bm));
-  padding:10px 24px;border-top:3px solid var(--gold);
-  display:flex;align-items:center;gap:10px}
+  padding:8px 12px;border:none;
+  display:flex;align-items:center;gap:8px;justify-content:space-between}
 .dec-section-label{font-size:.8rem;font-weight:700;color:#fff;letter-spacing:.3px}
 .dec-section-sub{font-size:.67rem;color:rgba(255,255,255,.6)}
 .dec-inner{padding:6px 12px 0}
@@ -745,13 +745,13 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .dec-result.visible{display:block}
 .dec-result-hdr{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
 .dec-code{font-family:'Courier New',monospace;font-size:.9rem;font-weight:800;color:var(--bm)}
-.dec-two{display:grid;grid-template-columns:1fr;gap:6px;align-items:start;margin-top:0px}
+.dec-two{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;margin-top:0px}
 @media(max-width:580px){.dec-two{grid-template-columns:1fr}}
-.dec-grid{display:grid;grid-template-columns:1fr;gap:2px}
-.dec-row{display:flex;gap:6px;padding:2px 6px;background:var(--g1);border-radius:4px;align-items:flex-start;border:1px solid var(--g2);font-size:.75rem}
-.dec-key{font-family:'Courier New',monospace;font-size:.62rem;color:var(--g5);
-  letter-spacing:.06em;white-space:nowrap;min-width:60px;padding-top:1px}
-.dec-val{font-size:.75rem;color:var(--g9);font-weight:600;line-height:1.3}
+.dec-grid{display:grid;grid-template-columns:1fr;gap:1px}
+.dec-row{display:flex;gap:4px;padding:1px 4px;background:var(--g1);border-radius:3px;align-items:flex-start;border:1px solid var(--g2);font-size:.7rem}
+.dec-key{font-family:'Courier New',monospace;font-size:.55rem;color:var(--g5);
+  letter-spacing:.06em;white-space:nowrap;min-width:48px;padding-top:0px}
+.dec-val{font-size:.7rem;color:var(--g9);font-weight:600;line-height:1.2}
 .dec-badge{display:inline-block;font-family:'Courier New',monospace;font-size:.62rem;
   padding:1px 5px;border-radius:2px;letter-spacing:.05em;font-weight:700}
 .badge-oem{background:#E8F2FA;color:var(--bm);border:1px solid #90CAF9}
@@ -764,24 +764,24 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .hl-amber{color:#8B6000;font-weight:700}
 
 /* anatomy */
-.dec-anatomy{background:var(--bl);border:1px solid #B3D4F0;border-radius:6px;padding:6px 10px 8px}
-.dec-anat-title{font-size:.65rem;font-weight:700;color:var(--bd);letter-spacing:.04em;
-  margin-bottom:4px;text-align:center;text-transform:uppercase}
+.dec-anatomy{background:var(--bl);border:1px solid #B3D4F0;border-radius:5px;padding:4px 8px 6px}
+.dec-anat-title{font-size:.6rem;font-weight:700;color:var(--bd);letter-spacing:.04em;
+  margin-bottom:2px;text-align:center;text-transform:uppercase}
 .dec-anat-title span{color:var(--bm);font-family:'Courier New',monospace}
-.dec-seg-row{display:flex;align-items:flex-start;justify-content:center;gap:3px;flex-wrap:wrap}
-.dec-seg{display:flex;flex-direction:column;align-items:center;min-width:50px;flex:1;max-width:100px}
-.dec-seg-box{font-family:'Courier New',monospace;font-size:.95rem;font-weight:800;
-  padding:4px 6px;border-radius:5px;border:1.5px solid transparent;width:100%;text-align:center}
+.dec-seg-row{display:flex;align-items:flex-start;justify-content:center;gap:2px;flex-wrap:wrap}
+.dec-seg{display:flex;flex-direction:column;align-items:center;min-width:40px;flex:0 1 auto;max-width:80px}
+.dec-seg-box{font-family:'Courier New',monospace;font-size:.85rem;font-weight:800;
+  padding:2px 4px;border-radius:4px;border:1.5px solid transparent;width:100%;text-align:center}
 .seg-blue{color:var(--bm);background:#E8F2FA;border-color:#90CAF9}
 .seg-green{color:#2E7D32;background:#E8F5E9;border-color:#A5D6A7}
 .seg-amber{color:#8B6000;background:#FFF8E1;border-color:#FFE082}
 .seg-purple{color:#6A1B9A;background:#F3E5F5;border-color:#CE93D8}
-.dec-seg-line{width:1px;height:6px;background:var(--g3);margin-top:0}
-.dec-seg-label{font-size:.62rem;font-weight:700;text-align:center;line-height:1.2;padding:0 2px}
+.dec-seg-line{width:1px;height:4px;background:var(--g3);margin-top:0}
+.dec-seg-label{font-size:.55rem;font-weight:700;text-align:center;line-height:1.1;padding:0 1px;margin-top:1px}
 .lbl-blue{color:var(--bm)}.lbl-green{color:#2E7D32}.lbl-amber{color:#8B6000}.lbl-purple{color:#6A1B9A}
-.dec-seg-sub-line{width:1px;height:4px;background:var(--g2);margin-top:2px}
-.dec-seg-sub{font-size:.55rem;color:var(--g5);text-align:center;margin-top:1px;line-height:1.2;padding:0 2px}
-.dec-sep{font-family:'Courier New',monospace;font-size:.95rem;color:var(--g3);font-weight:700;
+.dec-seg-sub-line{width:1px;height:3px;background:var(--g2);margin-top:1px}
+.dec-seg-sub{font-size:.5rem;color:var(--g5);text-align:center;margin-top:0px;line-height:1.1;padding:0 1px}
+.dec-sep{font-family:'Courier New',monospace;font-size:.85rem;color:var(--g3);font-weight:700;
   padding:0 1px;align-self:center;margin-top:0px;flex:0;min-width:auto}
 
 /* not found / suggest */
@@ -1575,6 +1575,8 @@ function DecodificadorTab({ selectedCode = null }) {
   const [compB,       setCompB]       = useState('');
   const [compResult,  setCompResult]  = useState(null);
 
+  const [expanded,    setExpanded]    = useState(true);    // Expandir/Colapsar
+
   // ── Load BD from Supabase ──────────────────────────────────
   useEffect(() => {
     (async () => {
@@ -1826,19 +1828,34 @@ function DecodificadorTab({ selectedCode = null }) {
   const posColor = p => p==='Izquierdo'?'hl-green': p.includes('Derecho')?'hl-amber':p==='—'?'':'hl-blue';
 
   return (
-    <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:'18vh',overflowY:'auto',background:'var(--dark)'}}>
+    <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:expanded?'60vh':'40px',overflow:'hidden',background:'var(--dark)',transition:'maxHeight 0.3s ease'}}>
       {/* Section header */}
       <div className="dec-section-title">
-        <span style={{fontSize:'1.1rem'}}>🔍</span>
-        <div>
-          <div className="dec-section-label">Decodificador de Códigos</div>
-          <div className="dec-section-sub">Selecciona un código de la tabla para decodificar automáticamente</div>
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
+          <span style={{fontSize:'1rem'}}>🔍</span>
+          <div>
+            <div className="dec-section-label">Decodificador de Códigos</div>
+            <div className="dec-section-sub">{dbCount.toLocaleString()} códigos</div>
+          </div>
         </div>
-        <span style={{marginLeft:'auto',fontFamily:'Courier New,monospace',fontSize:'.65rem',
-          color:'rgba(255,255,255,.5)',background:'rgba(255,255,255,.08)',padding:'2px 8px',
-          borderRadius:4,border:'1px solid rgba(255,255,255,.15)'}}>
-          BASE v2025 · {dbCount.toLocaleString()} códigos
-        </span>
+        
+        {/* DB Toolbar compacto en header */}
+        <div style={{display:'flex',alignItems:'center',gap:6,marginRight:8}}>
+          {isAdmin && (
+            <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={() => fileRef.current?.click()}>
+              ⬆ Cargar
+            </button>
+          )}
+          <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={handleDownloadBD}>⬇ Descargar</button>
+          <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
+            onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
+          />
+        </div>
+        
+        {/* Botón expandir/colapsar */}
+        <button onClick={() => setExpanded(!expanded)} style={{background:'none',border:'none',color:'#fff',cursor:'pointer',fontSize:'1rem',padding:'0 4px',display:'flex',alignItems:'center'}}>
+          {expanded ? '▼' : '▶'}
+        </button>
       </div>
 
       <div className="dec-inner">
@@ -2000,24 +2017,6 @@ function DecodificadorTab({ selectedCode = null }) {
           </div>
         )}
 
-        {/* ── DB toolbar ── */}
-        <div className="dec-db-bar">
-          <div className="dec-db-label">
-            BASE: <span id="dec-db-count">{dbCount.toLocaleString()}</span> códigos activos
-          </div>
-          {isAdmin && (
-            <>
-              <button className="dec-db-btn" onClick={() => fileRef.current?.click()}>
-                ⬆ CARGAR BD (.xlsx)
-              </button>
-              <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
-                onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
-              />
-            </>
-          )}
-          <button className="dec-db-btn" onClick={handleDownloadBD}>⬇ DESCARGAR BD (.xlsx)</button>
-        </div>
-        <div className={`dec-db-status${dbStatusCls?' '+dbStatusCls:''}`}>{dbStatus}</div>
       </div>
       </div>{/* /dec-inner */}
     </div>
