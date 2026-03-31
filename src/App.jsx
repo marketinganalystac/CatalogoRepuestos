@@ -1757,7 +1757,14 @@ function DecodificadorTab({ selectedCode = null }) {
     const keys = Object.keys(decDB);
     const matches = keys.filter(k => k.startsWith(raw) || k.includes(raw)).slice(0, 12);
     if (matches.length === 1) { showResultData(matches[0], decDB[matches[0]]); setQuery(matches[0]); return; }
-    if (matches.length > 1) { setNotFound('Código exacto no encontrado. Resultados similares:'); setSuggests(matches); }
+    if (matches.length > 1) { 
+      // Activar automáticamente el primer código encontrado
+      showResultData(matches[0], decDB[matches[0]]);
+      setQuery(matches[0]);
+      setSuggests(matches);
+      setNotFound('');
+      return;
+    }
     else setNotFound(`No se encontró el código "${raw}" en la base de datos.`);
   };
 
@@ -1819,7 +1826,7 @@ function DecodificadorTab({ selectedCode = null }) {
   const posColor = p => p==='Izquierdo'?'hl-green': p.includes('Derecho')?'hl-amber':p==='—'?'':'hl-blue';
 
   return (
-    <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:'50vh',overflowY:'auto',background:'var(--dark)'}}>
+    <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:'25vh',overflowY:'auto',background:'var(--dark)'}}>
       {/* Section header */}
       <div className="dec-section-title">
         <span style={{fontSize:'1.1rem'}}>🔍</span>
