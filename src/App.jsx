@@ -2149,14 +2149,6 @@ function CatalogoApp() {
     debRef.current = setTimeout(()=>setDebText(v), 280);
   };
 
-  // ── Auto-activar decodificador al buscar en la tabla ──
-  useEffect(() => {
-    if (filtered.length > 0 && debText) {
-      const firstCode = filtered[0].fields[5];
-      if (firstCode) setSelectedCode(firstCode);
-    }
-  }, [debText, filtered]);
-
   const availableModels = useMemo(()=>{
     if(!fMarca) return [];
     return [...new Set(records.filter(r=>r.fields[0]===fMarca).map(r=>r.fields[1]).filter(Boolean))].sort();
@@ -2188,6 +2180,14 @@ function CatalogoApp() {
     });
     return r;
   },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,debText,sortCol,sortAsc]);
+
+  // ── Auto-activar decodificador al buscar en la tabla ──
+  useEffect(() => {
+    if (filtered.length > 0 && debText) {
+      const firstCode = filtered[0].fields[5];
+      if (firstCode) setSelectedCode(firstCode);
+    }
+  }, [debText, filtered]);
 
   const totalPages = Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const paginated  = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
