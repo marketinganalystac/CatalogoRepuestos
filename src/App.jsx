@@ -287,29 +287,35 @@ const COL_DEFS = [
 const COL_DEFS_ORDER = [0,1,3,6,5,7,8,2,4];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
-  'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
+  'codigo','aplicable_1','aplicable_2','aplicable_3','aplicable_4','aplicable_5',
+  'descripcion_estandar','descripcion_berrocal','clasificacion','subclasificacion'];
 
 // ============================================================
 //  UTILIDADES
 // ============================================================
-/** Normaliza cualquier documento Supabase → { _id, fields:[9] } */
+/** Normaliza cualquier documento Supabase → { _id, fields:[14] } */
 const normalizeDoc = (raw) => {
   if (!raw) return null;
-  if (Array.isArray(raw.fields) && raw.fields.length === 9)
-    return { _id: raw._id, fields: raw.fields.map(v => String(v ?? '')) };
+  if (Array.isArray(raw.fields) && raw.fields.length >= 14)
+    return { _id: raw._id, fields: raw.fields.slice(0, 14).map(v => String(v ?? '')) };
   // compatibilidad con campos planos
   return {
     _id: raw._id,
     fields: [
       String(raw.marca       ?? raw.f0 ?? ''),
       String(raw.modelo      ?? raw.f1 ?? ''),
-      String(raw.modelo_orig ?? raw.f2 ?? ''),
+      String(raw.modelo_original ?? raw.f2 ?? ''),
       String(raw.periodo        ?? raw.f3 ?? ''),
-      String(raw.desc_orig   ?? raw.f4 ?? ''),
-      String(raw.codigo      ?? raw.f5 ?? ''),
-      String(raw.desc_std    ?? raw.f6 ?? ''),
-      String(raw.clasi       ?? raw.f7 ?? ''),
-      String(raw.sub         ?? raw.f8 ?? ''),
+      String(raw.codigo      ?? raw.f4 ?? ''),
+      String(raw.aplicable_1 ?? raw.f5 ?? ''),
+      String(raw.aplicable_2 ?? raw.f6 ?? ''),
+      String(raw.aplicable_3 ?? raw.f7 ?? ''),
+      String(raw.aplicable_4 ?? raw.f8 ?? ''),
+      String(raw.aplicable_5 ?? raw.f9 ?? ''),
+      String(raw.descripcion_estandar ?? raw.f10 ?? ''),
+      String(raw.descripcion_berrocal ?? raw.f11 ?? ''),
+      String(raw.clasificacion       ?? raw.f12 ?? ''),
+      String(raw.subclasificacion ?? raw.f13 ?? ''),
     ]
   };
 };
@@ -351,9 +357,14 @@ const FIELD_ALIASES = {
   'modelo':                 ['modelo'],
   'modelo_original':        ['modelo_original','modelo_orig','original','modelo_original'],
   'periodo': ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
-  'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig','descripcion'],
-  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero','codigo_1','codigo1'],
+  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero','codigo_1','codigo1','codigo_repuesto','código_repuesto','código'],
+  'aplicable_1':            ['aplicable_1','aplicable1','aplicable','aplica_1','aplica1'],
+  'aplicable_2':            ['aplicable_2','aplicable2'],
+  'aplicable_3':            ['aplicable_3','aplicable3'],
+  'aplicable_4':            ['aplicable_4','aplicable4'],
+  'aplicable_5':            ['aplicable_5','aplicable5'],
   'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est','desc_estandar','desc_estándar'],
+  'descripcion_berrocal':   ['descripcion_berrocal','desc_berrocal','berrocal','descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig'],
   'clasificacion':          ['clasificacion','clasificac','categoria','category','clasi','clasificacion'],
   'subclasificacion':       ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
 };
@@ -1081,9 +1092,9 @@ const ModalImport = ({ onClose, onImport }) => {
   const doImport = async (mode) => {
     if (!parsed) return;
     const records = parsed.records.map(row => {
-      const mapped = Array(9).fill('');
+      const mapped = Array(14).fill('');
       mapping.forEach((destIdx, srcIdx) => {
-        if (destIdx >= 0 && destIdx < 9) mapped[destIdx] = row[srcIdx] ?? '';
+        if (destIdx >= 0 && destIdx < 14) mapped[destIdx] = row[srcIdx] ?? '';
       });
       return mapped;
     });
