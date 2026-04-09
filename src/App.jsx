@@ -270,46 +270,55 @@ const DESC_STD_DEFAULT = [];
 // Context para listas dinámicas (marcas, clasificaciones, subclasificaciones, desc estándar)
 const ListasCtx = createContext(null);
 
-// [0]marca [1]modelo [2]modelo_orig [3]periodo [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
-// DEFAULT ORDER: Marca, Modelo, Período, Desc.Estándar, Código, Clasificación, Subclasificación
+// [0]marca [1]modelo [2]modelo_orig [3]periodo [4]codigo_repuesto [5-9]codigo_1-5 [10]desc_std [11]clasi [12]sub
+// DEFAULT ORDER: Marca, Modelo, Período, Código Repuesto, Código 1, Desc.Estándar, Código, Clasificación, Sub
 const COL_DEFS = [
-  { key:0, label:'Marca',            show:true,  width:110 },
-  { key:1, label:'Modelo',           show:true,  width:130 },
-  { key:2, label:'Modelo Original',  show:false, width:130 },
-  { key:3, label:'Período',          show:true,  width:90  },
-  { key:4, label:'Descripción',      show:false, width:200 },
-  { key:5, label:'Código',           show:true,  width:110 },
-  { key:6, label:'Desc. Estándar',   show:true,  width:200 },
-  { key:7, label:'Clasificación',    show:true,  width:150 },
-  { key:8, label:'Subclasificación', show:true,  width:150 },
+  { key:0, label:'Marca',                show:true,  width:110 },
+  { key:1, label:'Modelo',               show:true,  width:130 },
+  { key:2, label:'Modelo Original',      show:false, width:130 },
+  { key:3, label:'Período',              show:true,  width:90  },
+  { key:4, label:'Código Repuesto',      show:true,  width:110 },
+  { key:5, label:'Código 1',             show:true,  width:100 },
+  { key:6, label:'Código 2',             show:true,  width:100 },
+  { key:7, label:'Código 3',             show:false, width:100 },
+  { key:8, label:'Código 4',             show:false, width:100 },
+  { key:9, label:'Código 5',             show:false, width:100 },
+  { key:10, label:'Desc. Estándar',      show:true,  width:200 },
+  { key:11, label:'Clasificación',       show:true,  width:150 },
+  { key:12, label:'Subclasificación',    show:true,  width:150 },
 ];
-// Ordered display: Marca, Modelo, Período, Desc.Estándar, Código, Clasificación, Sub
-const COL_DEFS_ORDER = [0,1,3,6,5,7,8,2,4];
+// Ordered display: Marca, Modelo, Período, Código Repuesto, Código 1-2, Desc.Estándar, Clasificación, Sub
+const COL_DEFS_ORDER = [0,1,3,4,5,6,10,11,12,2];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
-  'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
+  'codigo_repuesto','codigo_1','codigo_2','codigo_3','codigo_4','codigo_5',
+  'descripcion_estandar','clasificacion','subclasificacion'];
 
 // ============================================================
 //  UTILIDADES
 // ============================================================
-/** Normaliza cualquier documento Supabase → { _id, fields:[9] } */
+/** Normaliza cualquier documento Supabase → { _id, fields:[13] } */
 const normalizeDoc = (raw) => {
   if (!raw) return null;
-  if (Array.isArray(raw.fields) && raw.fields.length === 9)
+  if (Array.isArray(raw.fields) && raw.fields.length === 13)
     return { _id: raw._id, fields: raw.fields.map(v => String(v ?? '')) };
   // compatibilidad con campos planos
   return {
     _id: raw._id,
     fields: [
-      String(raw.marca       ?? raw.f0 ?? ''),
-      String(raw.modelo      ?? raw.f1 ?? ''),
-      String(raw.modelo_orig ?? raw.f2 ?? ''),
-      String(raw.periodo        ?? raw.f3 ?? ''),
-      String(raw.desc_orig   ?? raw.f4 ?? ''),
-      String(raw.codigo      ?? raw.f5 ?? ''),
-      String(raw.desc_std    ?? raw.f6 ?? ''),
-      String(raw.clasi       ?? raw.f7 ?? ''),
-      String(raw.sub         ?? raw.f8 ?? ''),
+      String(raw.marca               ?? raw.f0  ?? ''),
+      String(raw.modelo              ?? raw.f1  ?? ''),
+      String(raw.modelo_original     ?? raw.f2  ?? ''),
+      String(raw.periodo             ?? raw.f3  ?? ''),
+      String(raw.codigo_repuesto     ?? raw.f4  ?? ''),
+      String(raw.codigo_1            ?? raw.f5  ?? ''),
+      String(raw.codigo_2            ?? raw.f6  ?? ''),
+      String(raw.codigo_3            ?? raw.f7  ?? ''),
+      String(raw.codigo_4            ?? raw.f8  ?? ''),
+      String(raw.codigo_5            ?? raw.f9  ?? ''),
+      String(raw.descripcion_estandar ?? raw.f10 ?? ''),
+      String(raw.clasificacion       ?? raw.f11 ?? ''),
+      String(raw.subclasificacion    ?? raw.f12 ?? ''),
     ]
   };
 };
@@ -347,15 +356,19 @@ function normalizeHeader(h) {
 
 // Variantes aceptadas por campo (para mapeo robusto)
 const FIELD_ALIASES = {
-  'marca':                  ['marca'],
-  'modelo':                 ['modelo'],
-  'modelo_original':        ['modelo_original','modelo_orig','original'],
-  'periodo': ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
-  'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig'],
-  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero'],
-  'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est'],
-  'clasificacion':          ['clasificacion','clasificac','categoria','category','clasi','clasificacion'],
-  'subclasificacion':       ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
+  'marca':                ['marca'],
+  'modelo':               ['modelo'],
+  'modelo_original':      ['modelo_original','modelo_orig','original'],
+  'periodo':              ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
+  'codigo_repuesto':      ['codigo_repuesto','código_repuesto','codigo','code','cod','sku','referencia','ref','part_number'],
+  'codigo_1':             ['codigo_1','código_1','aplicable_1','aplicable1','cod_1','code_1'],
+  'codigo_2':             ['codigo_2','código_2','aplicable_2','aplicable2','cod_2','code_2'],
+  'codigo_3':             ['codigo_3','código_3','aplicable_3','aplicable3','cod_3','code_3'],
+  'codigo_4':             ['codigo_4','código_4','aplicable_4','aplicable4','cod_4','code_4'],
+  'codigo_5':             ['codigo_5','código_5','aplicable_5','aplicable5','cod_5','code_5'],
+  'descripcion_estandar': ['descripcion_estandar','descripcion_berrocal','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est','descripcion','desc'],
+  'clasificacion':        ['clasificacion','clasificac','categoria','category','clasi'],
+  'subclasificacion':     ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
 };
 
 function parseWorkbook(wb, xlsxLib) {
@@ -1081,9 +1094,9 @@ const ModalImport = ({ onClose, onImport }) => {
   const doImport = async (mode) => {
     if (!parsed) return;
     const records = parsed.records.map(row => {
-      const mapped = Array(9).fill('');
+      const mapped = Array(13).fill('');
       mapping.forEach((destIdx, srcIdx) => {
-        if (destIdx >= 0 && destIdx < 9) mapped[destIdx] = row[srcIdx] ?? '';
+        if (destIdx >= 0 && destIdx < 13) mapped[destIdx] = row[srcIdx] ?? '';
       });
       return mapped;
     });
