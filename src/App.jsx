@@ -609,9 +609,9 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .md.sm{max-width:440px}
 @keyframes pop{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
 .mh{padding:16px 22px 12px;border-bottom:2px solid var(--gold);display:flex;align-items:center;
-  justify-content:space-between;background:linear-gradient(135deg,rgba(26,63,111,0.5),rgba(0,96,160,0.5));border-radius:14px 14px 0 0}
+  justify-content:space-between;background:linear-gradient(135deg,rgba(26,63,111,0.7),rgba(0,96,160,0.7));border-radius:14px 14px 0 0;backdrop-filter:blur(8px)}
 .mh.danger{background:#7B1818}
-.mh h2{font-size:.95rem;color:#fff;font-weight:700}
+.mh h2{font-size:.95rem;color:#fff;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.3)}
 .mx{background:rgba(255,255,255,.15);border:none;font-size:1.1rem;cursor:pointer;color:#fff;
   border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
 .mx:hover{background:var(--red)}
@@ -753,7 +753,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .dec-result.visible{display:block}
 .dec-result-hdr{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
 .dec-code{font-family:'Courier New',monospace;font-size:.9rem;font-weight:800;color:var(--bm)}
-.dec-two{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;margin-top:0px}
+.dec-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:8px;padding:0 4px}
 @media(max-width:580px){.dec-two{grid-template-columns:1fr}}
 .dec-grid{display:grid;grid-template-columns:1fr;gap:1px}
 .dec-row{display:flex;gap:4px;padding:1px 4px;background:var(--g1);border-radius:3px;align-items:flex-start;border:1px solid var(--g2);font-size:.7rem}
@@ -1867,7 +1867,6 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
         {selectedCode && (
           <div className="dec-top">
             <div className="dec-label">
-              <span className="dec-tag">CÓDIGO SELECCIONADO</span>
               <span className="dec-title"><span>{query}</span></span>
             </div>
           </div>
