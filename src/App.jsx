@@ -609,7 +609,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .md.sm{max-width:440px}
 @keyframes pop{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
 .mh{padding:16px 22px 12px;border-bottom:2px solid var(--gold);display:flex;align-items:center;
-  justify-content:space-between;background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:14px 14px 0 0}
+  justify-content:space-between;background:linear-gradient(135deg,rgba(26,63,111,0.5),rgba(0,96,160,0.5));border-radius:14px 14px 0 0}
 .mh.danger{background:#7B1818}
 .mh h2{font-size:.95rem;color:#fff;font-weight:700}
 .mx{background:rgba(255,255,255,.15);border:none;font-size:1.1rem;cursor:pointer;color:#fff;
@@ -2061,6 +2061,7 @@ function CatalogoApp() {
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
+  const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
   const decActionsRef = useRef(null);
@@ -2373,10 +2374,38 @@ function CatalogoApp() {
         <div className="ac-hact">
           {isAdmin && <button className="btn btn-g"
             onClick={()=>setModalEdit({_id:null,fields:Array(13).fill('')})}>➕ Nuevo</button>}
-          {isAdmin && <button className="btn btn-c" onClick={()=>setShowImport(true)}>📂 Cargar base</button>}
-          {isAdmin && <button className="btn btn-c" onClick={()=>decActionsRef.current?.triggerUpload()} title="Cargar base del Decodificador">⬆ BD Decoder</button>}
-          <button className="btn btn-c" onClick={()=>decActionsRef.current?.handleDownloadBD()} title="Descargar base del Decodificador">⬇ BD Decoder</button>
-          <button className="btn btn-c" onClick={exportCSV}>📥 Excel</button>
+          {isAdmin && <div style={{position:'relative',display:'inline-block'}}>
+            <button className="btn btn-c" onClick={()=>setShowBaseMenu(!showBaseMenu)}>📂 Cargar base</button>
+            {showBaseMenu && (
+              <div style={{position:'absolute',top:'100%',left:0,marginTop:4,background:'#fff',border:'1px solid var(--g3)',
+                borderRadius:6,boxShadow:'0 4px 12px rgba(0,0,0,.15)',zIndex:500,minWidth:220}}>
+                <button onClick={()=>{setShowImport(true);setShowBaseMenu(false);}} 
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
+                  onMouseEnter={e=>e.target.style.background='var(--bl)'}
+                  onMouseLeave={e=>e.target.style.background='none'}>
+                  📤 Carga de la base
+                </button>
+                <button onClick={()=>{exportCSV();setShowBaseMenu(false);}}
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
+                  onMouseEnter={e=>e.target.style.background='var(--bl)'}
+                  onMouseLeave={e=>e.target.style.background='none'}>
+                  📥 Descarga de la base
+                </button>
+                <button onClick={()=>{decActionsRef.current?.triggerUpload();setShowBaseMenu(false);}}
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
+                  onMouseEnter={e=>e.target.style.background='var(--bl)'}
+                  onMouseLeave={e=>e.target.style.background='none'}>
+                  📤 Carga de decodificador
+                </button>
+                <button onClick={()=>{decActionsRef.current?.handleDownloadBD();setShowBaseMenu(false);}}
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',transition:'.15s'}}
+                  onMouseEnter={e=>e.target.style.background='var(--bl)'}
+                  onMouseLeave={e=>e.target.style.background='none'}>
+                  📥 Descarga de decodificador
+                </button>
+              </div>
+            )}
+          </div>}
           <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>
           {isAdmin && <button className="btn btn-c" onClick={()=>setShowReplace(true)}>🔄 Reemplazar</button>}
           {isAdmin && <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
@@ -2474,6 +2503,9 @@ function CatalogoApp() {
           </React.Fragment>
         ))}
       </div>
+
+      {/* ── DECODIFICADOR — entre buscador avanzado y resultados ── */}
+      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -2592,9 +2624,6 @@ function CatalogoApp() {
           </span>
         </div>
       )}
-
-      {/* ── DECODIFICADOR — debajo de los resultados ── */}
-      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
 
       {/* MODALS */}
       {modalEdit && isAdmin && (
