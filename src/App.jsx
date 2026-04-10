@@ -254,15 +254,11 @@ const CLASIFICACIONES_DEFAULT = ['BATERÍAS','BUJÍAS E IGNICIÓN','CLUTCH Y TRA
 
 const SUBCLASIFICACIONES_DEFAULT = [
   'Amortiguadores','Balinera de Clutch','Balineras','Bandas de Freno',
-  'Barra Estabilizadora','Barra Suspensión','Base de Motor','Bases de Amortiguador',
-  'Baterías AGM','Baterías Especiales','Baterías MF','Baterías UMF','Bolas / Rótulas',
-  'Bomba de Agua','Brazos y Links','Bujes','Bujías','Bujías Iridium','Bujías Original',
-  'Bujías Platino','Bujías Racing','Bujías de Cobre','Calibración','Cilindros de Freno',
-  'Correas','Cremallera','Disco de Clutch','Discos de Freno','Esclavo de Clutch',
-  'Filtro A/C','Filtro de Aceite','Filtro de Aire','Filtro de Combustible','Hub / Cubos',
-  'Kit de Buje','Kit de Tiempo','Master de Clutch','Master de Freno','Muñequilla / Ejes',
-  'Pastillas / Tacos','Pernos','Plato de Clutch','Relay','Retenedoras','Tambores',
-  'Tensores','Terminales de Batería','Terminales y V','Trampa de Diesel','Zunchos'
+  'Bases de Amortiguador','Baterías','Bolas / Rótulas','Brazos / Links','Bujes','Bujías',
+  'Cilindros de Freno','Correas','Cremallera','Discos de Freno',
+  'Filtro A/C','Filtro de Aceite','Filtro de Aire','Filtro de Combustible',
+  'Hub / Cubos','Kit de Tiempo','Master de Clutch','Master de Freno',
+  'Muñequilla / Ejes','Pastillas / Tacos','Plato de Clutch','Tambores','Tensores','Terminales / V'
 ];
 
 const DESC_STD_DEFAULT = [];
@@ -271,23 +267,22 @@ const DESC_STD_DEFAULT = [];
 const ListasCtx = createContext(null);
 
 // [0]marca [1]modelo [2]modelo_orig [3]periodo [4]codigo_repuesto [5-9]codigo_1-5 [10]desc_std [11]clasi [12]sub
-// DEFAULT ORDER: Marca, Modelo, Período, Código Repuesto, Código 1, Desc.Estándar, Código, Clasificación, Sub
 const COL_DEFS = [
-  { key:0, label:'Marca',                show:true,  width:110 },
-  { key:1, label:'Modelo',               show:true,  width:130 },
-  { key:2, label:'Modelo Original',      show:false, width:130 },
-  { key:3, label:'Período',              show:true,  width:90  },
-  { key:4, label:'Código Repuesto',      show:true,  width:110 },
-  { key:5, label:'Código 1',             show:true,  width:100 },
-  { key:6, label:'Código 2',             show:true,  width:100 },
-  { key:7, label:'Código 3',             show:false, width:100 },
-  { key:8, label:'Código 4',             show:false, width:100 },
-  { key:9, label:'Código 5',             show:false, width:100 },
-  { key:10, label:'Desc. Estándar',      show:true,  width:200 },
-  { key:11, label:'Clasificación',       show:true,  width:150 },
-  { key:12, label:'Subclasificación',    show:true,  width:150 },
+  { key:0, label:'Marca',            show:true,  width:110 },
+  { key:1, label:'Modelo',           show:true,  width:130 },
+  { key:2, label:'Modelo Original',  show:false, width:130 },
+  { key:3, label:'Período',          show:true,  width:90  },
+  { key:4, label:'Código Repuesto',  show:true,  width:110 },
+  { key:5, label:'Código 1',         show:true,  width:100 },
+  { key:6, label:'Código 2',         show:true,  width:100 },
+  { key:7, label:'Código 3',         show:true,  width:100 },
+  { key:8, label:'Código 4',         show:true,  width:100 },
+  { key:9, label:'Código 5',         show:true,  width:100 },
+  { key:10, label:'Desc. Estándar',  show:true,  width:200 },
+  { key:11, label:'Clasificación',   show:true,  width:150 },
+  { key:12, label:'Subclasificación',show:true,  width:150 },
 ];
-// Ordered display: Marca, Modelo, Período, Código Repuesto, Código 1-2, Desc.Estándar, Clasificación, Sub
+// Ordered display
 const COL_DEFS_ORDER = [0,1,3,4,5,6,10,11,12,2];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
@@ -358,14 +353,14 @@ function normalizeHeader(h) {
 const FIELD_ALIASES = {
   'marca':                ['marca'],
   'modelo':               ['modelo'],
-  'modelo_original':      ['modelo_original','modelo_orig','original'],
+  'modelo_original':      ['modelo_original','modelo_orig','original','modelo original'],
   'periodo':              ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
-  'codigo_repuesto':      ['codigo_repuesto','código_repuesto','codigo','code','cod','sku','referencia','ref','part_number'],
-  'codigo_1':             ['codigo_1','código_1','aplicable_1','aplicable1','cod_1','code_1'],
-  'codigo_2':             ['codigo_2','código_2','aplicable_2','aplicable2','cod_2','code_2'],
-  'codigo_3':             ['codigo_3','código_3','aplicable_3','aplicable3','cod_3','code_3'],
-  'codigo_4':             ['codigo_4','código_4','aplicable_4','aplicable4','cod_4','code_4'],
-  'codigo_5':             ['codigo_5','código_5','aplicable_5','aplicable5','cod_5','code_5'],
+  'codigo_repuesto':      ['codigo_repuesto','código_repuesto','codigo','code','cod','sku','referencia','ref','part_number','numero'],
+  'codigo_1':             ['codigo_1','código_1','aplicable_1','aplicable1','cod_1','code_1','codigo1'],
+  'codigo_2':             ['codigo_2','código_2','aplicable_2','aplicable2','cod_2','code_2','codigo2'],
+  'codigo_3':             ['codigo_3','código_3','aplicable_3','aplicable3','cod_3','code_3','codigo3'],
+  'codigo_4':             ['codigo_4','código_4','aplicable_4','aplicable4','cod_4','code_4','codigo4'],
+  'codigo_5':             ['codigo_5','código_5','aplicable_5','aplicable5','cod_5','code_5','codigo5'],
   'descripcion_estandar': ['descripcion_estandar','descripcion_berrocal','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est','descripcion','desc'],
   'clasificacion':        ['clasificacion','clasificac','categoria','category','clasi'],
   'subclasificacion':     ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
