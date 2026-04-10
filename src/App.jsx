@@ -588,6 +588,10 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .cmo{color:var(--g7);white-space:nowrap;font-weight:500}
 .ca{font-weight:800;color:var(--bd);background:var(--gl);border-radius:4px;font-size:.8rem;padding:2px 6px;white-space:nowrap;display:inline-block}
 .cc{font-family:'Courier New',monospace;color:var(--grn);font-size:.77rem;font-weight:700;background:#F1F8E9;padding:2px 7px;border-radius:4px;display:inline-block;white-space:nowrap}
+.cc-repuesto{font-family:'Courier New',monospace;color:var(--bd);font-size:.82rem;font-weight:800;
+  background:linear-gradient(135deg,#FFF8DC,#FFE57F);
+  padding:3px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+  border:1.5px solid var(--gold);box-shadow:0 1px 4px rgba(212,168,0,.35),inset 0 1px 0 rgba(255,255,255,.6)}
 .cds{color:var(--g9);font-weight:600}
 .ct{display:inline-block;padding:2px 9px;border-radius:9px;font-size:.67rem;font-weight:700;color:#fff;white-space:nowrap}
 .cs{color:var(--g5);font-size:.75rem;font-style:italic}
@@ -604,14 +608,25 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .mo{display:none;position:fixed;inset:0;background:rgba(10,25,45,.6);z-index:1000;
   align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .mo.show{display:flex}
-.md{background:#F8FBFF;border-radius:14px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;
+.md{background:rgba(248,251,255,0.97);border-radius:14px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;
   box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.3);animation:pop .2s ease}
 .md.sm{max-width:440px}
 @keyframes pop{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
-.mh{padding:16px 22px 12px;border-bottom:2px solid var(--gold);display:flex;align-items:center;
-  justify-content:space-between;background:linear-gradient(135deg,rgba(26,63,111,0.7),rgba(0,96,160,0.7));border-radius:14px 14px 0 0;backdrop-filter:blur(8px)}
-.mh.danger{background:#7B1818}
-.mh h2{font-size:.95rem;color:#fff;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.3)}
+.mh{padding:16px 22px 12px;border-bottom:1px solid rgba(144,202,249,0.4);display:flex;align-items:center;
+  justify-content:space-between;
+  background:linear-gradient(135deg,rgba(13,42,74,0.55) 0%,rgba(0,96,160,0.38) 50%,rgba(26,63,111,0.48) 100%);
+  border-radius:14px 14px 0 0;
+  backdrop-filter:blur(20px) saturate(160%) brightness(1.1);
+  -webkit-backdrop-filter:blur(20px) saturate(160%) brightness(1.1);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.18),inset 0 -1px 0 rgba(212,168,0,0.25),0 2px 12px rgba(0,60,120,.2);
+  border-top:1px solid rgba(255,255,255,0.15);
+  border-left:1px solid rgba(255,255,255,0.1);
+  border-right:1px solid rgba(255,255,255,0.08)}
+.mh.danger{
+  background:linear-gradient(135deg,rgba(123,24,24,0.55),rgba(198,40,40,0.4));
+  border-bottom:1px solid rgba(255,120,120,0.35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.12),0 2px 12px rgba(120,0,0,.2)}
+.mh h2{font-size:.95rem;color:rgba(255,255,255,0.95);font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.4),0 0 20px rgba(144,202,249,0.2)}
 .mx{background:rgba(255,255,255,.15);border:none;font-size:1.1rem;cursor:pointer;color:#fff;
   border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
 .mx:hover{background:var(--red)}
@@ -1863,25 +1878,19 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
 
       <div className="dec-inner">
       <div className="dec-card">
-        {/* ── Display código seleccionado (read-only) ── */}
-        {selectedCode && (
-          <div className="dec-top">
-            <div className="dec-label">
-              <span className="dec-title"><span>{query}</span></span>
-            </div>
-          </div>
-        )}
-
-        {!selectedCode && (
-          <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
-            Selecciona un código de la tabla para decodificarlo aquí…
-          </div>
-        )}
 
         {/* ── Loading state ── */}
         {dbLoading && (
           <div className="loading" style={{padding:'20px',background:'var(--bl)',borderRadius:0}}>
             <span className="spin"/>Cargando base de códigos desde Supabase…
+          </div>
+        )}
+
+        {/* ── Placeholder cuando no hay código seleccionado ── */}
+        {!dbLoading && !selectedCode && !result && (
+          <div style={{padding:'10px 14px',color:'var(--g5)',fontSize:'.75rem',fontStyle:'italic',
+            display:'flex',alignItems:'center',gap:6,borderBottom:'1px solid var(--g2)'}}>
+            <span>🔬</span> Haz clic en un <strong style={{color:'var(--bd)'}}>Código Repuesto</strong> de la tabla o usa los filtros de búsqueda para decodificar automáticamente
           </div>
         )}
 
@@ -2057,6 +2066,7 @@ function CatalogoApp() {
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
+  const [showDecoder, setShowDecoder] = useState(true);   // Toggle decodificador
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
@@ -2183,11 +2193,12 @@ function CatalogoApp() {
 
   // ── Auto-activar decodificador al buscar en la tabla ──
   useEffect(() => {
-    if (filtered.length > 0 && debText) {
-      const firstCode = filtered[0].fields[5];
+    const hasFilter = debText || fMarca || fModelo || fPeriodo || fClasi || fSub;
+    if (filtered.length > 0 && hasFilter) {
+      const firstCode = filtered[0].fields[4]; // Código Repuesto es el campo principal
       if (firstCode) setSelectedCode(firstCode);
     }
-  }, [debText, filtered]);
+  }, [debText, fMarca, fModelo, fPeriodo, fClasi, fSub, filtered]);
 
   const totalPages = Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const paginated  = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
@@ -2498,10 +2509,25 @@ function CatalogoApp() {
             {i<arr.length-1&&<div className="ac-qsep"/>}
           </React.Fragment>
         ))}
+        <div className="ac-qsep"/>
+        <button
+          onClick={()=>setShowDecoder(d=>!d)}
+          style={{
+            display:'flex',alignItems:'center',gap:5,padding:'4px 12px',
+            background:showDecoder?'linear-gradient(135deg,var(--bd),var(--bm))':'rgba(26,63,111,0.08)',
+            color:showDecoder?'#fff':'var(--bd)',
+            border:`1.5px solid ${showDecoder?'var(--bm)':'var(--g3)'}`,
+            borderRadius:8,fontSize:'.72rem',fontWeight:700,cursor:'pointer',
+            transition:'all .2s',whiteSpace:'nowrap',
+            boxShadow:showDecoder?'0 2px 8px rgba(0,96,160,.3)':'none'
+          }}>
+          <span style={{fontSize:'.85rem'}}>{showDecoder?'🔬':'🔍'}</span>
+          {showDecoder?'Ocultar':'Mostrar'} Decodificador
+        </button>
       </div>
 
       {/* ── DECODIFICADOR — entre buscador avanzado y resultados ── */}
-      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+      {showDecoder && <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />}
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -2565,10 +2591,10 @@ function CatalogoApp() {
                   1:()=><span className="cm">{highlightText(f[1],debText)}{f[2]&&<><br/><span className="cmo">{f[2]}</span></>}</span>,
                   2:()=><span className="cmo">{f[2]}</span>,
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
-                  4:()=><span className="cds">{highlightText(f[4],debText)}</span>,
-                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}
-                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[5]);toast('📋 Código copiado','info');}}>⧉</button>
+                  4:()=>f[4]?<span className="cc-repuesto" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[4])}>{highlightText(f[4],debText)}
+                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⧉</button>
                   </span>:<span className="cs">—</span>,
+                  5:()=>f[5]?<span className="cc">{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
                   6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,
                   7:()=>f[7]?<span className="cc">{highlightText(f[7],debText)}</span>:<span className="cs">—</span>,
                   8:()=>f[8]?<span className="cc">{highlightText(f[8],debText)}</span>:<span className="cs">—</span>,
