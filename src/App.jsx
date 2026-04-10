@@ -283,7 +283,7 @@ const COL_DEFS = [
   { key:12, label:'Subclasificación',show:true,  width:150 },
 ];
 // Ordered display
-const COL_DEFS_ORDER = [0,1,3,4,5,6,10,11,12,2];
+const COL_DEFS_ORDER = [0,1,3,4,5,6,7,8,9,10,11,12,2];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
   'codigo_repuesto','codigo_1','codigo_2','codigo_3','codigo_4','codigo_5',
@@ -965,7 +965,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         {addNewBtn(i)}
       </div>
     );
-    const upper = [0,1,2,4,5,6,7,8,9,10,11,12,13].includes(i);
+    const upper = [0,1,2,4,5,6,7,8,9].includes(i);
     return (
       <input type="text" style={inputStyle(i)} value={form[i]}
         onChange={e => setField(i, upper ? e.target.value.toUpperCase() : e.target.value)}/>
@@ -1036,7 +1036,8 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
 const ModalDetail = ({ record, onClose, onEdit }) => {
   if (!record) return null;
   const labels = ['Marca','Modelo','Modelo Original','Período',
-    'Descripción Original','Código','Descripción Estándar','Clasificación','Subclasificación'];
+    'Código Repuesto','Código 1','Código 2','Código 3','Código 4','Código 5',
+    'Desc. Estándar','Clasificación','Subclasificación'];
   return (
     <div className="mo show">
       <div className="md sm">
@@ -1089,14 +1090,22 @@ const ModalImport = ({ onClose, onImport }) => {
 
   const doImport = async (mode) => {
     if (!parsed) return;
+    // parsed.records rows are already indexed by destination field (post-colMap).
+    // mapping[srcCol] = destField; parsed.colMap[autoDestField] = srcCol.
+    // Build field-to-field remap: autoDestField → userDestField.
+    const fieldRemap = parsed.colMap.map(srcCol =>
+      srcCol >= 0 && srcCol < mapping.length ? mapping[srcCol] : -1
+    );
     const records = parsed.records.map(row => {
       const mapped = Array(13).fill('');
-      mapping.forEach((destIdx, srcIdx) => {
-        if (destIdx >= 0 && destIdx < 13) mapped[destIdx] = row[srcIdx] ?? '';
+      fieldRemap.forEach((userDest, autoDest) => {
+        if (userDest >= 0 && userDest < 13 && autoDest < row.length) {
+          mapped[userDest] = row[autoDest] ?? '';
+        }
       });
       return mapped;
     });
-    onClose(); // cerrar modal antes de la operación larga
+    onClose();
     await onImport(records, mode);
   };
 
@@ -2083,17 +2092,17 @@ function CatalogoApp() {
   },[records, extraMarcas]);
 
   const allClasif = useMemo(()=>{
-    const fromRecs = records.map(r=>r.fields[7]).filter(Boolean);
+    const fromRecs = records.map(r=>r.fields[11]).filter(Boolean);
     return [...new Set([...CLASIFICACIONES_DEFAULT, ...extraClasif, ...fromRecs])].sort();
   },[records, extraClasif]);
 
   const allSubs = useMemo(()=>{
-    const fromRecs = records.map(r=>r.fields[8]).filter(Boolean);
+    const fromRecs = records.map(r=>r.fields[12]).filter(Boolean);
     return [...new Set([...SUBCLASIFICACIONES_DEFAULT, ...extraSubs, ...fromRecs])].sort();
   },[records, extraSubs]);
 
   const allDescStd = useMemo(()=>{
-    const fromRecs = records.map(r=>r.fields[6]).filter(Boolean);
+    const fromRecs = records.map(r=>r.fields[10]).filter(Boolean);
     return [...new Set([...DESC_STD_DEFAULT, ...extraDescStd, ...fromRecs])].sort();
   },[records, extraDescStd]);
 
@@ -2170,7 +2179,7 @@ function CatalogoApp() {
 
   const availableSubs = useMemo(()=>{
     if(!fClasi) return allSubs;
-    return [...new Set(records.filter(r=>r.fields[7]===fClasi).map(r=>r.fields[8]).filter(Boolean))].sort();
+    return [...new Set(records.filter(r=>r.fields[11]===fClasi).map(r=>r.fields[12]).filter(Boolean))].sort();
   },[records,fClasi,allSubs]);
 
   const filtered = useMemo(()=>{
@@ -2178,8 +2187,8 @@ function CatalogoApp() {
     if(fMarca)  r=r.filter(x=>x.fields[0]===fMarca);
     if(fModelo) r=r.filter(x=>x.fields[1]===fModelo);
     if(fPeriodo)   r=r.filter(x=>x.fields[3]===fPeriodo);
-    if(fClasi)  r=r.filter(x=>x.fields[7]===fClasi);
-    if(fSub)    r=r.filter(x=>x.fields[8]===fSub);
+    if(fClasi)  r=r.filter(x=>x.fields[11]===fClasi);
+    if(fSub)    r=r.filter(x=>x.fields[12]===fSub);
     if(debText){const t=debText.toLowerCase(); r=r.filter(x=>x.fields.some(f=>String(f).toLowerCase().includes(t)));}
     if(sortCol>=0) r=[...r].sort((a,b)=>{
       const av=String(a.fields[sortCol]||'').toLowerCase();
@@ -2204,7 +2213,7 @@ function CatalogoApp() {
     total:     records.length,
     marcas:    new Set(records.map(r=>r.fields[0]).filter(Boolean)).size,
     modelos:   new Set(records.map(r=>r.fields[1]).filter(Boolean)).size,
-    cats:      new Set(records.map(r=>r.fields[7]).filter(Boolean)).size,
+    cats:      new Set(records.map(r=>r.fields[11]).filter(Boolean)).size,
     conCodigo: records.filter(r=>r.fields[5]).length,
   }),[records]);
 
@@ -2540,13 +2549,17 @@ function CatalogoApp() {
                   1:()=><span className="cm">{highlightText(f[1],debText)}{f[2]&&<><br/><span className="cmo">{f[2]}</span></>}</span>,
                   2:()=><span className="cmo">{f[2]}</span>,
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
-                  4:()=><span className="cds">{highlightText(f[4],debText)}{f[6]&&<><br/><span className="cs">{f[6]}</span></>}</span>,
+                  4:()=><span className="cds">{highlightText(f[4],debText)}</span>,
                   5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}
                     <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[5]);toast('📋 Código copiado','info');}}>⧉</button>
                   </span>:<span className="cs">—</span>,
-                  6:()=><span className="cs">{f[6]}</span>,
-                  7:()=>f[7]?<span className="ct" style={{background:clasiBgColor(f[7])}}>{f[7]}</span>:null,
-                  8:()=><span className="cs">{f[8]}</span>,
+                  6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,
+                  7:()=>f[7]?<span className="cc">{highlightText(f[7],debText)}</span>:<span className="cs">—</span>,
+                  8:()=>f[8]?<span className="cc">{highlightText(f[8],debText)}</span>:<span className="cs">—</span>,
+                  9:()=>f[9]?<span className="cc">{highlightText(f[9],debText)}</span>:<span className="cs">—</span>,
+                  10:()=><span className="cds">{highlightText(f[10],debText)}</span>,
+                  11:()=>f[11]?<span className="ct" style={{background:clasiBgColor(f[11])}}>{f[11]}</span>:null,
+                  12:()=><span className="cs">{f[12]}</span>,
                 };
                 return (
                   <tr key={rec._id||ri}>
