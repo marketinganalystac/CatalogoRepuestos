@@ -965,7 +965,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         {addNewBtn(i)}
       </div>
     );
-    const upper = [0,1,2,4,5,6,7,8,9].includes(i);
+    const upper = [0,1,2,4,5,6,7,8,9,10,11,12,13].includes(i);
     return (
       <input type="text" style={inputStyle(i)} value={form[i]}
         onChange={e => setField(i, upper ? e.target.value.toUpperCase() : e.target.value)}/>
