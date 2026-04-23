@@ -754,8 +754,8 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .dec-result-hdr{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
 .dec-code{font-family:'Courier New',monospace;font-size:.9rem;font-weight:800;color:var(--bm)}
 .dec-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:8px;padding:0 4px}
-@media(max-width:580px){.dec-two{grid-template-columns:1fr}}
-.dec-grid{display:grid;grid-template-columns:1fr;gap:1px}
+@media(max-width:580px){.dec-two{grid-template-columns:1fr}.dec-grid{grid-template-columns:1fr}}
+.dec-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px}
 .dec-row{display:flex;gap:4px;padding:1px 4px;background:var(--g1);border-radius:3px;align-items:flex-start;border:1px solid var(--g2);font-size:.7rem}
 .dec-key{font-family:'Courier New',monospace;font-size:.55rem;color:var(--g5);
   letter-spacing:.06em;white-space:nowrap;min-width:48px;padding-top:0px}
@@ -1863,15 +1863,6 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
 
       <div className="dec-inner">
       <div className="dec-card">
-        {/* ── Display código seleccionado (read-only) ── */}
-        {selectedCode && (
-          <div className="dec-top">
-            <div className="dec-label">
-              <span className="dec-title"><span>{query}</span></span>
-            </div>
-          </div>
-        )}
-
         {!selectedCode && (
           <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
             Selecciona un código de la tabla para decodificarlo aquí…
