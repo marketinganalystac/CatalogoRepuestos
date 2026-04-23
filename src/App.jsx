@@ -536,7 +536,7 @@ const STYLES = `
   --glass-hover:rgba(255,255,255,.22);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--g1);color:var(--g9);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--g1);color:var(--g9);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 
 /* ══════════════════════════════════
    HEADER — glass depth
@@ -759,9 +759,13 @@ tbody tr:nth-child(even):hover{background:linear-gradient(90deg,var(--bl) 0%,#f0
 tbody td{padding:7px 13px;vertical-align:middle}
 .cm{font-weight:800;color:var(--bd);white-space:nowrap;font-size:.84rem}
 .cmo{color:var(--g7);white-space:nowrap;font-weight:500}
-.ca{font-weight:800;color:var(--bd);background:linear-gradient(135deg,var(--gl),#f5e898);
-  border-radius:5px;font-size:.8rem;padding:2px 7px;white-space:nowrap;display:inline-block;
-  box-shadow:0 1px 3px rgba(180,140,0,.2),inset 0 1px 0 rgba(255,255,255,.6)}
+.ca{
+  font-family:'Segoe UI',system-ui,sans-serif;color:var(--bd);font-size:.77rem;font-weight:700;
+  background:linear-gradient(135deg,#e8f0fa,#d4e2f8);
+  padding:2px 8px;border-radius:5px;display:inline-block;white-space:nowrap;
+  border:1px solid rgba(26,63,111,.18);
+  box-shadow:0 1px 3px rgba(26,63,111,.1),inset 0 1px 0 rgba(255,255,255,.6);
+}
 .cc{
   font-family:'Courier New',monospace;color:#1a6e1a;font-size:.77rem;font-weight:700;
   background:linear-gradient(135deg,#e8f5e9,#d4eecd);
@@ -774,7 +778,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   box-shadow:0 2px 4px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.25)}
 .cs{color:var(--g5);font-size:.75rem;font-style:italic}
 .cac{white-space:nowrap;text-align:center}
-.ac-mark{background:#FFE082;color:#333;border-radius:2px;padding:0 2px}
+.ac-mark{background:rgba(0,96,160,.15);color:var(--bd);border-radius:2px;padding:0 2px;font-weight:700;outline:1px solid rgba(0,96,160,.25)}
 
 /* Pagination */
 .ac-pg{
@@ -950,6 +954,8 @@ tbody td{padding:7px 13px;vertical-align:middle}
   .ac-header{padding:0 14px;min-height:54px}
   .ac-htitle .s2{font-size:.86rem}
   .ac-fg{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px}
+  .dec-two{grid-template-columns:1fr}
+  .dec-grid{grid-template-columns:1fr 1fr}
 }
 
 /* ══════════════════════════════════
@@ -963,7 +969,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   .ac-badge{display:none}
   .fb-badge{font-size:.6rem;padding:2px 7px}
   .ac-hact{gap:5px;flex-wrap:wrap}
-  .btn{padding:7px 12px;font-size:.76rem;border-radius:7px}
+  .btn{padding:7px 12px;font-size:.76rem;border-radius:7px;min-height:38px}
   .ac-sp{padding:10px 12px}
   .ac-fg{grid-template-columns:1fr 1fr;gap:7px}
   .ac-sr{flex-direction:column;gap:7px}
@@ -972,12 +978,12 @@ tbody td{padding:7px 13px;vertical-align:middle}
   .ac-qs{padding:6px 12px;gap:6px}
   .ac-qi{padding:5px 10px;border-radius:8px}
   .ac-qi .n{font-size:.9rem}
-  .ac-tw{max-height:calc(100vh - 250px)}
+  .ac-tw{max-height:calc(100vh - 250px);-webkit-overflow-scrolling:touch}
   table{font-size:.75rem}
   thead th{padding:8px 8px;font-size:.63rem}
   tbody td{padding:6px 8px}
   .ac-pg{padding:8px 12px;gap:4px}
-  .pb{padding:6px 10px;font-size:.72rem}
+  .pb{padding:6px 10px;font-size:.72rem;min-height:34px}
   .pi{display:none}
   .md{width:96vw!important;max-width:96vw!important;border-radius:14px;max-height:92vh}
   .fgrid{grid-template-columns:1fr}
@@ -987,6 +993,11 @@ tbody td{padding:7px 13px;vertical-align:middle}
   .mhist-wrap{max-height:55vh}
   .mf{flex-wrap:wrap;gap:6px}
   .mf .btn{flex:1;min-width:100px;justify-content:center;display:flex}
+  .dec-inner{padding:6px 10px 0}
+  .dec-two{grid-template-columns:1fr;gap:10px}
+  .dec-grid{grid-template-columns:1fr}
+  .dec-comp-inputs{grid-template-columns:1fr auto 1fr}
+  .btn-copy{padding:2px 6px;font-size:.65rem}
 }
 
 /* ══════════════════════════════════
@@ -1001,10 +1012,13 @@ tbody td{padding:7px 13px;vertical-align:middle}
   tbody td{padding:5px 6px;font-size:.73rem}
   .ac-qi{padding:4px 8px}
   select,input[type=text]{padding:9px 10px;font-size:.85rem}
-  .btn{padding:9px 12px;font-size:.78rem}
+  .btn{padding:9px 12px;font-size:.78rem;min-height:40px}
   .pb{padding:7px 10px;font-size:.74rem}
   .ac-pg{gap:3px;padding:6px 10px}
   .toast{bottom:12px;right:12px;left:12px;max-width:100%}
+  .dec-seg-box{font-size:.72rem;padding:2px 4px}
+  .dec-seg{min-width:32px}
+  .dec-anatomy{padding:6px 8px}
 }
 
 /* ══════════════════════════════════
@@ -2273,9 +2287,6 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
         {/* ── Result ── */}
         {result && (
           <div className="dec-result visible">
-            <div className="dec-result-hdr">
-              <span className="dec-code">{result.code}</span>
-            </div>
             <div className="dec-two">
               {/* Left: anatomy */}
               <div>
@@ -2932,10 +2943,10 @@ function CatalogoApp() {
                   1:()=><span className="cm">{highlightText(f[1],debText)}{f[2]&&<><br/><span className="cmo">{f[2]}</span></>}</span>,
                   2:()=><span className="cmo">{f[2]}</span>,
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
-                  4:()=><span className="cds">{highlightText(f[4],debText)}</span>,
-                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}
-                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[5]);toast('📋 Código copiado','info');}}>⧉</button>
+                  4:()=>f[4]?<span className="cc">{highlightText(f[4],debText)}
+                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⧉</button>
                   </span>:<span className="cs">—</span>,
+                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
                   6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,
                   7:()=>f[7]?<span className="cc">{highlightText(f[7],debText)}</span>:<span className="cs">—</span>,
                   8:()=>f[8]?<span className="cc">{highlightText(f[8],debText)}</span>:<span className="cs">—</span>,
