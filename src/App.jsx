@@ -272,12 +272,12 @@ const COL_DEFS = [
   { key:1, label:'Modelo',           show:true,  width:190 },
   { key:2, label:'Modelo Original',  show:false, width:190 },
   { key:3, label:'Período',          show:true,  width:90  },
-  { key:4, label:'Código Repuesto',  show:true,  width:160 },
-  { key:5, label:'Código 1',         show:true,  width:100 },
-  { key:6, label:'Código 2',         show:true,  width:100 },
-  { key:7, label:'Código 3',         show:true,  width:100 },
-  { key:8, label:'Código 4',         show:true,  width:100 },
-  { key:9, label:'Código 5',         show:true,  width:100 },
+  { key:4, label:'Código Repuesto',  show:true,  width:200 },
+  { key:5, label:'Código 1',         show:false, width:100 },
+  { key:6, label:'Código 2',         show:false, width:100 },
+  { key:7, label:'Código 3',         show:false, width:100 },
+  { key:8, label:'Código 4',         show:false, width:100 },
+  { key:9, label:'Código 5',         show:false, width:100 },
   { key:10, label:'Desc. Estándar',  show:true,  width:200 },
   { key:11, label:'Clasificación',   show:true,  width:150 },
   { key:12, label:'Subclasificación',show:true,  width:150 },
@@ -767,11 +767,6 @@ thead th.sorted .si{opacity:1;color:var(--gold)}
   background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%)!important;
   border-color:var(--bm)!important;color:#fff!important;font-weight:700!important;
 }
-.dec-pg-code{
-  background:var(--gold);color:#000;border-radius:4px;
-  padding:1px 6px;font-size:0.49rem;font-weight:700;
-  box-shadow:0 1px 3px rgba(0,0,0,.2);
-}
 tbody tr{transition:background .1s;background:#fff}
 tbody tr:hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody tr:nth-child(even){background:#FAFBFD}
@@ -779,19 +774,31 @@ tbody tr:nth-child(even):hover{background:linear-gradient(90deg,var(--bl) 0%,#f0
 tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2);background:inherit}
 .cm{font-weight:800;color:var(--bd);white-space:normal;font-size:0.71rem;word-break:break-word;line-height:1.3}
 .cmo{color:var(--g7);white-space:normal;font-weight:500;word-break:break-word;line-height:1.3}
+/* Período — elegante, neutro azul oscuro */
 .ca{
-  font-family:'Segoe UI',system-ui,sans-serif;color:var(--bd);font-size:0.64rem;font-weight:700;
-  background:linear-gradient(135deg,#e8f0fa,#d4e2f8);
-  padding:2px 8px;border-radius:5px;display:inline-block;white-space:nowrap;
-  border:1px solid rgba(26,63,111,.18);
-  box-shadow:0 1px 3px rgba(26,63,111,.1),inset 0 1px 0 rgba(255,255,255,.6);
+  font-family:'Segoe UI',system-ui,sans-serif;
+  color:#1a3a5c;font-size:0.62rem;font-weight:700;
+  background:#EEF3FA;
+  padding:2px 10px;border-radius:20px;display:inline-block;white-space:nowrap;
+  border:1px solid #C5D6EE;
+  letter-spacing:.3px;
 }
+/* Códigos — monospace elegante sobre fondo oscuro */
 .cc{
-  font-family:'Courier New',monospace;color:#1a6e1a;font-size:0.64rem;font-weight:700;
-  background:linear-gradient(135deg,#e8f5e9,#d4eecd);
-  padding:2px 8px;border-radius:5px;display:inline-block;white-space:nowrap;
-  border:1px solid rgba(46,125,50,.2);
-  box-shadow:0 1px 3px rgba(46,125,50,.12),inset 0 1px 0 rgba(255,255,255,.5);
+  font-family:'SF Mono','Fira Code','Consolas',monospace;
+  color:#0d4f7a;font-size:0.61rem;font-weight:600;
+  background:linear-gradient(135deg,#f0f7ff,#e3eef9);
+  padding:2px 9px;border-radius:5px;display:inline-block;white-space:nowrap;
+  border:1px solid #b8d4ee;
+  letter-spacing:.04em;
+}
+/* Badge código en paginación — azul marino sobre blanco */
+.dec-pg-code{
+  background:var(--bd);color:#fff;border-radius:4px;
+  padding:1px 7px;font-size:0.49rem;font-weight:700;
+  font-family:'SF Mono','Fira Code','Consolas',monospace;
+  letter-spacing:.03em;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
 }
 .cds{color:var(--g9);font-weight:600}
 .ct{display:inline-block;padding:2px 9px;border-radius:9px;font-size:0.54rem;font-weight:700;color:#fff;white-space:nowrap;
