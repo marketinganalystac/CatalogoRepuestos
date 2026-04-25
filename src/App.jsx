@@ -739,7 +739,7 @@ select:focus,input[type=text]:focus{
 .ac-qsep{width:1px;height:24px;background:var(--g2)}
 
 /* Table wrapper */
-.ac-tw{overflow-x:auto;overflow-y:visible;background:#fff;flex:1}
+.ac-tw{overflow:auto;flex:1;background:#fff;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:0.68rem}
 thead th{
   background:linear-gradient(180deg,#244f85 0%,var(--bd) 100%);
@@ -1070,17 +1070,16 @@ tbody td{padding:7px 13px;vertical-align:middle}
 }
 .dec-panel-close:hover{background:rgba(255,255,255,.24);transform:translateY(-1px)}
 .dec-panel-close:active{transform:translateY(1px)}
-/* Área principal — scroll vertical propio */
+/* Área principal */
 .ac-main{
   flex:1;min-width:0;
-  overflow-y:auto;
-  overflow-x:hidden;
+  overflow:hidden;
   display:flex;flex-direction:column;
   height:100%;
 }
 /* Tab lateral */
 .dec-panel-tab{
-  position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:250;
+  flex-shrink:0;
   writing-mode:vertical-rl;text-orientation:mixed;
   background:linear-gradient(180deg,var(--bd) 0%,var(--bm) 100%);
   color:#fff;border:none;border-radius:0 8px 8px 0;
@@ -1088,10 +1087,11 @@ tbody td{padding:7px 13px;vertical-align:middle}
   letter-spacing:.13em;white-space:nowrap;
   box-shadow:3px 0 14px rgba(0,0,0,.28);
   border-right:2px solid var(--gold);
-  transition:opacity .3s, left .3s cubic-bezier(.4,0,.2,1);
+  transition:opacity .3s, width .3s;
+  align-self:center;
 }
-.dec-panel-tab:hover{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);padding-right:9px;}
-.dec-panel-tab.hidden{opacity:0;pointer-events:none;left:-50px;}
+.dec-panel-tab:hover{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);}
+.dec-panel-tab.hidden{opacity:0;pointer-events:none;width:0;padding:0;border:none;overflow:hidden;}
 .dec-panel-tab .tab-dot{
   display:block;width:6px;height:6px;border-radius:50%;
   background:var(--gold);margin:5px auto 0;
@@ -2883,16 +2883,6 @@ function CatalogoApp() {
       {/* ── SPLIT BODY ── */}
       <div className="ac-body">
 
-        {/* Tab lateral (visible cuando el panel está cerrado) */}
-        <button
-          className={`dec-panel-tab${decPanelOpen?' hidden':''}`}
-          onClick={()=>setDecPanelOpen(true)}
-          title="Abrir Decodificador"
-        >
-          🔍 DECODIFICADOR
-          {selectedCode && <span className="tab-dot"/>}
-        </button>
-
         {/* Panel izquierdo */}
         <div className={`dec-left-panel${decPanelOpen?' open':''}`}>
           <div className="dec-panel-header">
@@ -2907,6 +2897,16 @@ function CatalogoApp() {
           </div>
           <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
         </div>
+
+        {/* Tab lateral (visible cuando el panel está cerrado) */}
+        <button
+          className={`dec-panel-tab${decPanelOpen?' hidden':''}`}
+          onClick={()=>setDecPanelOpen(true)}
+          title="Abrir Decodificador"
+        >
+          🔍 DECODIFICADOR
+          {selectedCode && <span className="tab-dot"/>}
+        </button>
 
         {/* Contenido principal */}
         <div className="ac-main">
@@ -2985,11 +2985,8 @@ function CatalogoApp() {
         ))}
       </div>
 
-      {/* ── DECODIFICADOR — entre buscador avanzado y resultados ── */}
-      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
-
       {/* TABLE */}
-      <div className="ac-tw">
+      <div className="ac-tw" style={{position:'relative'}}>
         {loading ? (
           <div className="loading">
             <span className="spin"/>
